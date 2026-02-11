@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { PageView } from '../types';
 
 interface HeaderProps {
@@ -18,16 +18,28 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   const navItemClass = (page: PageView) => 
     `text-base font-medium transition-colors cursor-pointer ${currentPage === page ? 'text-primary-600' : 'text-slate-500 hover:text-slate-900'}`;
 
+  // Custom Logo Component
+  const RingsLogo = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 100 80" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Left Ring */}
+      <circle cx="35" cy="45" r="22" stroke="#D4A574" strokeWidth="5" />
+      {/* Right Ring */}
+      <circle cx="65" cy="45" r="22" stroke="#D4A574" strokeWidth="5" />
+      {/* Diamond at intersection */}
+      <path d="M50 12 L60 28 L50 44 L40 28 Z" fill="#D4A574" stroke="white" strokeWidth="1" />
+    </svg>
+  );
+
   return (
     <header className="fixed w-full bg-white/95 backdrop-blur-md z-50 border-b border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
-            <button onClick={() => handleNav('home')} className="flex items-center gap-2 group">
-              <div className="bg-primary-50 p-2 rounded-full group-hover:bg-primary-100 transition-colors">
-                 <Heart className="h-6 w-6 text-primary-600 fill-current" />
+            <button onClick={() => handleNav('home')} className="flex items-center gap-3 group">
+              <div className="transition-transform group-hover:scale-105">
+                 <RingsLogo className="h-10 w-auto" />
               </div>
-              <span className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Virgins</span>
+              <span className="text-2xl font-serif font-bold text-navy-900 tracking-widest uppercase">Virgins</span>
             </button>
           </div>
           
@@ -42,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
             </button>
           </div>
 
-          <nav className="hidden md:flex space-x-10">
+          <nav className="hidden md:flex space-x-10 items-center">
             <button onClick={() => handleNav('home')} className={navItemClass('home')}>Home</button>
             <button onClick={() => handleNav('how-it-works')} className={navItemClass('how-it-works')}>How It Works</button>
             <button onClick={() => handleNav('pricing')} className={navItemClass('pricing')}>Pricing</button>
@@ -50,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
           </nav>
           
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
-            <a href="#download" className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-full shadow-sm text-base font-medium text-white bg-primary-600 hover:bg-primary-700 transition-all hover:shadow-md">
+            <a href="#download" className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-6 py-2 border border-transparent rounded-full shadow-sm text-base font-bold text-navy-900 bg-gold-400 hover:bg-gold-500 transition-all hover:shadow-md">
               Download App
             </a>
           </div>
@@ -63,9 +75,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
           <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50">
             <div className="pt-5 pb-6 px-5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                   <Heart className="h-6 w-6 text-primary-600 fill-current" />
-                   <span className="text-xl font-serif font-bold text-slate-900">Virgins</span>
+                <div className="flex items-center gap-3">
+                   <RingsLogo className="h-8 w-auto" />
+                   <span className="text-xl font-serif font-bold text-navy-900 tracking-widest uppercase">Virgins</span>
                 </div>
                 <div className="-mr-2">
                   <button
