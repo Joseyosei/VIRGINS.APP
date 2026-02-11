@@ -56,9 +56,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
 
           <nav className="hidden md:flex space-x-10 items-center">
             <button onClick={() => handleNav('home')} className={navItemClass('home')}>Home</button>
+            <button onClick={() => handleNav('matchmaker')} className={navItemClass('matchmaker')}>Algorithm</button>
             <button onClick={() => handleNav('how-it-works')} className={navItemClass('how-it-works')}>How It Works</button>
             <button onClick={() => handleNav('pricing')} className={navItemClass('pricing')}>Pricing</button>
-            <button onClick={() => handleNav('about')} className={navItemClass('about')}>About Us</button>
           </nav>
           
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
@@ -98,6 +98,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
                   <button onClick={() => handleNav('home')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
                     <span className="ml-3 text-base font-medium text-slate-900">Home</span>
                   </button>
+                  <button onClick={() => handleNav('matchmaker')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
+                    <span className="ml-3 text-base font-medium text-slate-900">Algorithm Demo</span>
+                  </button>
                   <button onClick={() => handleNav('waitlist')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
                     <span className="ml-3 text-base font-medium text-slate-900 font-bold text-primary-600">Join Waitlist</span>
                   </button>
@@ -106,9 +109,6 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
                   </button>
                   <button onClick={() => handleNav('pricing')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
                     <span className="ml-3 text-base font-medium text-slate-900">Pricing</span>
-                  </button>
-                  <button onClick={() => handleNav('about')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
-                    <span className="ml-3 text-base font-medium text-slate-900">About Us</span>
                   </button>
                 </nav>
               </div>

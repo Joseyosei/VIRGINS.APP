@@ -27,11 +27,12 @@ import {
   Alert,
   Switch,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Modal
 } from 'react-native';
 // Note: In a real project, you would import these from '@react-navigation/...'
 // We are mocking navigation state for this single-file demonstration
-import { Heart, MessageCircle, User, Shield, Check, X, ArrowRight, Settings, Camera, Mic, Gem, ChevronLeft, Search, Filter, Lock, Mail } from 'lucide-react-native';
+import { Heart, MessageCircle, User, Shield, Check, X, ArrowRight, Settings, Camera, Mic, Gem, ChevronLeft, Search, Filter, Lock, Mail, Star, Crown, Zap, Eye, CheckCircle } from 'lucide-react-native';
 
 // --- THEME ---
 const COLORS = {
@@ -72,11 +73,15 @@ const MOCK_LIKES = [
   { id: '7', name: 'Grace', age: 22, image: 'https://picsum.photos/200/300?random=7' },
 ];
 
+// --- TYPES ---
+type SubscriptionTier = 'free' | 'plus' | 'ultimate';
+
 // --- CONTEXT ---
 const AuthContext = createContext<any>(null);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
+  const [subscription, setSubscription] = useState<SubscriptionTier>('free');
   const [isLoading, setIsLoading] = useState(false);
 
   const login = (email: string) => {
@@ -95,14 +100,27 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, 1500);
   };
 
-  const logout = () => setUser(null);
+  const logout = () => {
+    setUser(null);
+    setSubscription('free');
+  };
 
   const verifyUser = () => {
     if (user) setUser({ ...user, isVerified: true });
   };
 
+  const purchaseSubscription = (tier: SubscriptionTier) => {
+    setIsLoading(true);
+    // Simulate API call to RevenueCat/App Store
+    setTimeout(() => {
+      setSubscription(tier);
+      setIsLoading(false);
+      Alert.alert("Success", `Welcome to Virgins ${tier === 'plus' ? 'Plus' : 'Ultimate'}!`);
+    }, 2000);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, verifyUser, isLoading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, verifyUser, isLoading, subscription, purchaseSubscription }}>
       {children}
     </AuthContext.Provider>
   );
@@ -138,7 +156,120 @@ const InputField = ({ placeholder, value, onChangeText, secureTextEntry }: any) 
 
 // --- SCREENS ---
 
-// 1. WELCOME SCREEN
+// 1. PAYWALL SCREEN (NEW)
+const PaywallScreen = ({ navigation }: any) => {
+  const { purchaseSubscription, subscription } = useContext(AuthContext);
+  const [selectedPlan, setSelectedPlan] = useState<'plus' | 'ultimate'>('ultimate');
+
+  const handlePurchase = () => {
+    purchaseSubscription(selectedPlan);
+    navigation.goBack();
+  };
+
+  const FeatureRow = ({ text }: { text: string }) => (
+    <View style={styles.featureRow}>
+      <Check color={COLORS.goldMid} size={18} />
+      <Text style={styles.featureText}>{text}</Text>
+    </View>
+  );
+
+  return (
+    <View style={styles.paywallContainer}>
+      <Image 
+        source={{ uri: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800' }} 
+        style={styles.paywallBackground} 
+        blurRadius={10}
+      />
+      <View style={styles.paywallOverlay} />
+
+      <SafeAreaView style={{ flex: 1 }}>
+        <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
+          <X color={COLORS.white} size={28} />
+        </TouchableOpacity>
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
+          <View style={{ alignItems: 'center', marginBottom: 30 }}>
+            <View style={styles.crownContainer}>
+              <Crown color={COLORS.navyDark} size={32} fill={COLORS.navyDark} />
+            </View>
+            <Text style={styles.paywallTitle}>Unlock the Full Experience</Text>
+            <Text style={styles.paywallSubtitle}>Invest in your future marriage with premium tools.</Text>
+          </View>
+
+          {/* Plus Card */}
+          <TouchableOpacity 
+            style={[styles.planCard, selectedPlan === 'plus' && styles.planCardSelected]}
+            onPress={() => setSelectedPlan('plus')}
+          >
+            <View style={styles.planHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Star color={COLORS.goldMid} size={24} fill={COLORS.goldMid} />
+                <Text style={styles.planName}>Virgins Plus</Text>
+              </View>
+              <Text style={styles.planPrice}>$9.99/mo</Text>
+            </View>
+            <View style={styles.planFeatures}>
+               <FeatureRow text="Unlimited Likes" />
+               <FeatureRow text="See Who Liked You" />
+               <FeatureRow text="Read Receipts" />
+            </View>
+          </TouchableOpacity>
+
+          {/* Ultimate Card */}
+          <TouchableOpacity 
+            style={[styles.planCard, styles.ultimateCard, selectedPlan === 'ultimate' && styles.planCardSelected]}
+            onPress={() => setSelectedPlan('ultimate')}
+          >
+            <View style={styles.popularBadge}>
+              <Text style={styles.popularText}>MOST POPULAR</Text>
+            </View>
+            <View style={styles.planHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Crown color={COLORS.navyDark} size={24} fill={COLORS.navyDark} />
+                <Text style={[styles.planName, { color: COLORS.navyDark }]}>Virgins Ultimate</Text>
+              </View>
+              <Text style={[styles.planPrice, { color: COLORS.navyDark }]}>$19.99/mo</Text>
+            </View>
+            <View style={styles.planFeatures}>
+               <View style={styles.featureRow}>
+                 <Check color={COLORS.navyDark} size={18} />
+                 <Text style={[styles.featureText, { color: COLORS.navyDark }]}>Everything in Plus</Text>
+               </View>
+               <View style={styles.featureRow}>
+                 <Check color={COLORS.navyDark} size={18} />
+                 <Text style={[styles.featureText, { color: COLORS.navyDark }]}>Incognito Mode</Text>
+               </View>
+               <View style={styles.featureRow}>
+                 <Check color={COLORS.navyDark} size={18} />
+                 <Text style={[styles.featureText, { color: COLORS.navyDark }]}>Priority Likes</Text>
+               </View>
+               <View style={styles.featureRow}>
+                 <Check color={COLORS.navyDark} size={18} />
+                 <Text style={[styles.featureText, { color: COLORS.navyDark }]}>Video Chat Access</Text>
+               </View>
+            </View>
+          </TouchableOpacity>
+
+          <Text style={styles.disclaimerText}>
+            Recurring billing, cancel anytime. Subscription automatically renews unless auto-renew is turned off at least 24-hours before the end of the current period.
+          </Text>
+        </ScrollView>
+
+        <View style={styles.paywallFooter}>
+          <GoldButton 
+            title={selectedPlan === 'ultimate' ? 'Get Ultimate' : 'Get Plus'} 
+            onPress={handlePurchase}
+          />
+          <TouchableOpacity style={{ marginTop: 15 }}>
+            <Text style={styles.restoreText}>Restore Purchases</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </View>
+  );
+};
+
+// 2. WELCOME SCREEN
 const WelcomeScreen = ({ navigation }: any) => (
   <View style={styles.container}>
     <View style={styles.heroOverlay} />
@@ -166,7 +297,7 @@ const WelcomeScreen = ({ navigation }: any) => (
   </View>
 );
 
-// 2. LOGIN SCREEN
+// 3. LOGIN SCREEN
 const LoginScreen = ({ navigation }: any) => {
   const { login } = useContext(AuthContext);
   const [email, setEmail] = useState('');
@@ -199,7 +330,7 @@ const LoginScreen = ({ navigation }: any) => {
   );
 };
 
-// 3. SIGN UP SCREEN
+// 4. SIGN UP SCREEN
 const SignUpScreen = ({ navigation }: any) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -236,7 +367,7 @@ const SignUpScreen = ({ navigation }: any) => {
   );
 };
 
-// 3.5 EMAIL VERIFICATION SCREEN
+// 5. EMAIL VERIFICATION SCREEN
 const EmailVerificationScreen = ({ navigation, route }: any) => {
   const [isVerifying, setIsVerifying] = useState(false);
   const email = route?.params?.email || 'your email';
@@ -285,7 +416,7 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
   );
 };
 
-// 4. PROFILE SETUP STEPS
+// 6. PROFILE SETUP STEPS
 // Step 1: Basic Identity
 const ProfileSetup1 = ({ navigation }: any) => {
   return (
@@ -404,7 +535,7 @@ const ProfileSetup4 = ({ navigation }: any) => {
   );
 };
 
-// 5. VERIFICATION
+// 7. VERIFICATION
 const VerificationScreen = ({ navigation }: any) => {
   const { login } = useContext(AuthContext); // Actually trigger login state to enter app
   return (
@@ -435,14 +566,24 @@ const VerificationScreen = ({ navigation }: any) => {
   );
 };
 
-// 6. MAIN APP TABS
-const DiscoverScreen = () => {
+// 8. MAIN APP TABS
+const DiscoverScreen = ({ navigation }: any) => {
+  const { subscription } = useContext(AuthContext);
+
+  const handlePremiumAction = () => {
+    if (subscription === 'free') {
+      navigation.navigate('Paywall');
+    } else {
+      Alert.alert('Action', 'Feature available!');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Image source={{uri: 'https://picsum.photos/50/50'}} style={styles.smallLogo} />
         <Text style={styles.headerTitleSmall}>Discover</Text>
-        <TouchableOpacity style={styles.filterButton}>
+        <TouchableOpacity style={styles.filterButton} onPress={handlePremiumAction}>
           <Filter color={COLORS.goldMid} size={24} />
         </TouchableOpacity>
       </View>
@@ -469,7 +610,7 @@ const DiscoverScreen = () => {
           <TouchableOpacity style={[styles.actionButton, styles.passButton]}>
             <X color={COLORS.red} size={32} />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.superLikeButton]}>
+          <TouchableOpacity style={[styles.actionButton, styles.superLikeButton]} onPress={handlePremiumAction}>
              <Gem color="#3B82F6" size={24} />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.actionButton, styles.likeButton]}>
@@ -481,160 +622,243 @@ const DiscoverScreen = () => {
   );
 };
 
-const LikesScreen = () => (
-  <SafeAreaView style={styles.safeArea}>
-    <View style={styles.header}>
-      <Text style={styles.headerTitleSmall}>Likes You</Text>
-      <View style={styles.goldBadge}>
-        <Text style={styles.goldBadgeText}>FREE</Text>
-      </View>
-    </View>
-    <View style={styles.freeBanner}>
-       <Text style={styles.freeBannerText}>See who likes you for FREE! Match now.</Text>
-    </View>
-    <FlatList 
-      data={MOCK_LIKES}
-      numColumns={2}
-      keyExtractor={item => item.id}
-      renderItem={({ item }) => (
-        <View style={styles.gridItem}>
-          <Image source={{ uri: item.image }} style={styles.gridImage} />
-          <View style={styles.gridOverlay}>
-            <Text style={styles.gridName}>{item.name}, {item.age}</Text>
-            <View style={styles.verifiedBadgeSmall}><Gem size={10} color={COLORS.navyDark}/></View>
-          </View>
-        </View>
-      )}
-      contentContainerStyle={{ padding: 8 }}
-    />
-  </SafeAreaView>
-);
+const LikesScreen = ({ navigation }: any) => {
+  const { subscription } = useContext(AuthContext);
+  const isFree = subscription === 'free';
 
-const MessagesScreen = ({ onChatOpen }: any) => (
-  <SafeAreaView style={styles.safeArea}>
-    <View style={styles.header}>
-      <Text style={styles.headerTitleSmall}>Messages</Text>
-      <Search color={COLORS.goldMid} size={24} />
-    </View>
-    <View style={styles.newMatchesContainer}>
-       <Text style={styles.sectionHeader}>New Matches</Text>
-       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{paddingLeft: 15}}>
-          {[1,2,3,4].map(i => (
-             <View key={i} style={styles.newMatchItem}>
-                <Image source={{uri: `https://picsum.photos/100/100?random=${i+10}`}} style={styles.newMatchAvatar} />
-                <View style={styles.newBadge}><Text style={styles.newBadgeText}>NEW</Text></View>
-             </View>
-          ))}
-       </ScrollView>
-    </View>
-    <FlatList 
-      data={MOCK_MESSAGES}
-      keyExtractor={item => item.id}
-      renderItem={({ item }) => (
-        <TouchableOpacity style={styles.messageItem} onPress={onChatOpen}>
-          <Image source={{ uri: item.avatar }} style={styles.avatar} />
-          <View style={styles.messageContent}>
-            <View style={styles.messageRow}>
-              <Text style={styles.senderName}>{item.sender}</Text>
-              <Text style={styles.messageTime}>{item.time}</Text>
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitleSmall}>Likes You</Text>
+        <View style={styles.goldBadge}>
+          <Text style={styles.goldBadgeText}>{isFree ? 'FREE' : 'PREMIUM'}</Text>
+        </View>
+      </View>
+      {isFree && (
+        <TouchableOpacity style={styles.freeBanner} onPress={() => navigation.navigate('Paywall')}>
+           <Text style={styles.freeBannerText}>Upgrade to see who likes you!</Text>
+        </TouchableOpacity>
+      )}
+      <FlatList 
+        data={MOCK_LIKES}
+        numColumns={2}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity 
+            style={styles.gridItem} 
+            onPress={() => isFree ? navigation.navigate('Paywall') : Alert.alert(item.name)}
+          >
+            <Image 
+              source={{ uri: item.image }} 
+              style={styles.gridImage} 
+              blurRadius={isFree ? 15 : 0} // Feature Gate
+            />
+            {isFree ? (
+              <View style={[styles.gridOverlay, { justifyContent: 'center', alignItems: 'center', height: '100%' }]}>
+                <Lock color={COLORS.goldMid} size={24} />
+              </View>
+            ) : (
+              <View style={styles.gridOverlay}>
+                <Text style={styles.gridName}>{item.name}, {item.age}</Text>
+                <View style={styles.verifiedBadgeSmall}><Gem size={10} color={COLORS.navyDark}/></View>
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={{ padding: 8 }}
+      />
+    </SafeAreaView>
+  );
+};
+
+const MessagesScreen = ({ onChatOpen, navigation }: any) => {
+  const { subscription } = useContext(AuthContext);
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitleSmall}>Messages</Text>
+        <Search color={COLORS.goldMid} size={24} />
+      </View>
+      <View style={styles.newMatchesContainer}>
+        <Text style={styles.sectionHeader}>New Matches</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{paddingLeft: 15}}>
+            {[1,2,3,4].map(i => (
+              <View key={i} style={styles.newMatchItem}>
+                  <Image source={{uri: `https://picsum.photos/100/100?random=${i+10}`}} style={styles.newMatchAvatar} />
+                  <View style={styles.newBadge}><Text style={styles.newBadgeText}>NEW</Text></View>
+              </View>
+            ))}
+        </ScrollView>
+      </View>
+      <FlatList 
+        data={MOCK_MESSAGES}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.messageItem} onPress={onChatOpen}>
+            <Image source={{ uri: item.avatar }} style={styles.avatar} />
+            <View style={styles.messageContent}>
+              <View style={styles.messageRow}>
+                <Text style={styles.senderName}>{item.sender}</Text>
+                <Text style={styles.messageTime}>{item.time}</Text>
+              </View>
+              <Text style={[styles.lastMessage, item.unread && styles.unreadMessage]}>
+                {item.lastMessage}
+              </Text>
             </View>
-            <Text style={[styles.lastMessage, item.unread && styles.unreadMessage]}>
-              {item.lastMessage}
-            </Text>
+            {item.unread && (
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                 {subscription === 'plus' || subscription === 'ultimate' ? (
+                   <Eye size={12} color={COLORS.goldMid} style={{marginRight: 4}} /> // Read Receipt Sim
+                 ) : null}
+                 <View style={styles.unreadDot} />
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
+      />
+    </SafeAreaView>
+  );
+};
+
+const ChatScreen = ({ onBack, navigation }: any) => {
+  const { subscription } = useContext(AuthContext);
+
+  const handleVideoCall = () => {
+    if (subscription !== 'ultimate') {
+      navigation.navigate('Paywall');
+    } else {
+      Alert.alert("Video Call", "Starting secure video call...");
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.chatHeader}>
+          <TouchableOpacity onPress={onBack}><ChevronLeft color={COLORS.goldMid} size={28} /></TouchableOpacity>
+          <Image source={{uri: MOCK_MESSAGES[0].avatar}} style={styles.chatAvatar} />
+          <View style={{flex: 1, marginLeft: 10}}>
+            <Text style={styles.chatName}>{MOCK_MESSAGES[0].sender}</Text>
+            <Text style={styles.chatStatus}>Online</Text>
           </View>
-          {item.unread && <View style={styles.unreadDot} />}
-        </TouchableOpacity>
-      )}
-    />
-  </SafeAreaView>
-);
+          <TouchableOpacity onPress={handleVideoCall}>
+             <Camera color={subscription === 'ultimate' ? COLORS.goldMid : COLORS.gray} size={24} />
+          </TouchableOpacity>
+      </View>
+      <ScrollView style={styles.chatBody}>
+          <View style={styles.msgLeft}>
+            <Text style={styles.msgTextLeft}>Hi Sarah! I noticed we both love hiking.</Text>
+            <Text style={styles.msgTimeLeft}>10:28 AM</Text>
+          </View>
+          <View style={styles.msgRight}>
+            <Text style={styles.msgTextRight}>Yes! It's my favorite way to connect with nature.</Text>
+            <Text style={styles.msgTimeRight}>10:29 AM</Text>
+          </View>
+          <View style={styles.msgLeft}>
+            <Text style={styles.msgTextLeft}>That sounds like a lovely idea!</Text>
+            <Text style={styles.msgTimeLeft}>10:30 AM</Text>
+          </View>
+      </ScrollView>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={100}>
+          <View style={styles.chatInputContainer}>
+            <TouchableOpacity><ArrowRight color={COLORS.gray} size={24} style={{transform: [{rotate: '45deg'}]}} /></TouchableOpacity>
+            <TextInput style={styles.chatInput} placeholder="Type a message..." placeholderTextColor={COLORS.gray} />
+            <TouchableOpacity style={styles.sendButton}><ArrowRight color={COLORS.navyDark} size={20} /></TouchableOpacity>
+          </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
 
-const ChatScreen = ({ onBack }: any) => (
-  <SafeAreaView style={styles.safeArea}>
-     <View style={styles.chatHeader}>
-        <TouchableOpacity onPress={onBack}><ChevronLeft color={COLORS.goldMid} size={28} /></TouchableOpacity>
-        <Image source={{uri: MOCK_MESSAGES[0].avatar}} style={styles.chatAvatar} />
-        <View style={{flex: 1, marginLeft: 10}}>
-           <Text style={styles.chatName}>{MOCK_MESSAGES[0].sender}</Text>
-           <Text style={styles.chatStatus}>Online</Text>
-        </View>
-        <TouchableOpacity><Camera color={COLORS.goldMid} size={24} /></TouchableOpacity>
-     </View>
-     <ScrollView style={styles.chatBody}>
-        <View style={styles.msgLeft}>
-           <Text style={styles.msgTextLeft}>Hi Sarah! I noticed we both love hiking.</Text>
-           <Text style={styles.msgTimeLeft}>10:28 AM</Text>
-        </View>
-        <View style={styles.msgRight}>
-           <Text style={styles.msgTextRight}>Yes! It's my favorite way to connect with nature.</Text>
-           <Text style={styles.msgTimeRight}>10:29 AM</Text>
-        </View>
-        <View style={styles.msgLeft}>
-           <Text style={styles.msgTextLeft}>That sounds like a lovely idea!</Text>
-           <Text style={styles.msgTimeLeft}>10:30 AM</Text>
-        </View>
-     </ScrollView>
-     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={100}>
-        <View style={styles.chatInputContainer}>
-           <TouchableOpacity><ArrowRight color={COLORS.gray} size={24} style={{transform: [{rotate: '45deg'}]}} /></TouchableOpacity>
-           <TextInput style={styles.chatInput} placeholder="Type a message..." placeholderTextColor={COLORS.gray} />
-           <TouchableOpacity style={styles.sendButton}><ArrowRight color={COLORS.navyDark} size={20} /></TouchableOpacity>
-        </View>
-     </KeyboardAvoidingView>
-  </SafeAreaView>
-);
+const ProfileScreen = ({ logout, navigation }: any) => {
+  const { subscription } = useContext(AuthContext);
 
-const ProfileScreen = ({ logout }: any) => (
-  <SafeAreaView style={styles.safeArea}>
-    <ScrollView>
-      <View style={styles.profileHeader}>
-        <Image source={{ uri: 'https://picsum.photos/200/200' }} style={styles.profileAvatar} />
-        <View style={styles.editIcon}><Settings size={16} color={COLORS.white} /></View>
-        <Text style={styles.profileName}>James, 27 <Gem size={18} color={COLORS.goldMid} /></Text>
-        <Text style={styles.profileStatus}>Austin, TX</Text>
+  const getBadge = () => {
+    if (subscription === 'ultimate') return <Crown size={18} color={COLORS.goldDark} fill={COLORS.goldDark} />;
+    if (subscription === 'plus') return <Star size={18} color={COLORS.goldMid} fill={COLORS.goldMid} />;
+    return <Gem size={18} color={COLORS.gray} />;
+  };
+
+  const getPlanName = () => {
+    if (subscription === 'ultimate') return 'Ultimate Member';
+    if (subscription === 'plus') return 'Plus Member';
+    return 'Free Member';
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView>
+        <View style={styles.profileHeader}>
+          <Image source={{ uri: 'https://picsum.photos/200/200' }} style={styles.profileAvatar} />
+          <View style={styles.editIcon}><Settings size={16} color={COLORS.white} /></View>
+          
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+             <Text style={styles.profileName}>James, 27</Text>
+             {getBadge()}
+          </View>
+          <Text style={styles.profileStatus}>{getPlanName()} • Austin, TX</Text>
+          
+          <View style={styles.statsRow}>
+             <View style={styles.statBox}><Text style={styles.statNum}>12</Text><Text style={styles.statLabel}>Matches</Text></View>
+             <View style={styles.statBox}><Text style={styles.statNum}>48</Text><Text style={styles.statLabel}>Likes</Text></View>
+             <View style={styles.statBox}><Text style={styles.statNum}>342</Text><Text style={styles.statLabel}>Views</Text></View>
+          </View>
+        </View>
+
+        {subscription !== 'ultimate' && (
+          <TouchableOpacity style={styles.upgradeBanner} onPress={() => navigation.navigate('Paywall')}>
+            <View>
+                <Text style={styles.upgradeTitle}>Upgrade to {subscription === 'plus' ? 'Ultimate' : 'Premium'}</Text>
+                <Text style={styles.upgradeSubtitle}>Unlock full access to matches & features</Text>
+            </View>
+            <Crown color={COLORS.navyDark} size={24} fill={COLORS.navyDark} />
+          </TouchableOpacity>
+        )}
         
-        <View style={styles.statsRow}>
-           <View style={styles.statBox}><Text style={styles.statNum}>12</Text><Text style={styles.statLabel}>Matches</Text></View>
-           <View style={styles.statBox}><Text style={styles.statNum}>48</Text><Text style={styles.statLabel}>Likes</Text></View>
-           <View style={styles.statBox}><Text style={styles.statNum}>342</Text><Text style={styles.statLabel}>Views</Text></View>
-        </View>
-      </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Settings</Text>
+          <TouchableOpacity style={styles.row}>
+            <Text style={styles.rowText}>Edit Profile</Text>
+            <ArrowRight color={COLORS.gray} size={20} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('Paywall')}>
+            <Text style={styles.rowText}>Manage Subscription</Text>
+            <ArrowRight color={COLORS.gray} size={20} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.row}>
+            <Text style={styles.rowText}>Discovery Settings</Text>
+            <ArrowRight color={COLORS.gray} size={20} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.row}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+               <Text style={styles.rowText}>Incognito Mode</Text>
+               {subscription !== 'ultimate' && <Lock size={14} color={COLORS.goldMid} style={{marginLeft: 8}} />}
+            </View>
+            <Switch 
+              trackColor={{ false: "#767577", true: COLORS.goldMid }}
+              thumbColor={COLORS.white}
+              value={subscription === 'ultimate'} 
+              onValueChange={() => {
+                if(subscription !== 'ultimate') navigation.navigate('Paywall');
+              }}
+            />
+          </TouchableOpacity>
 
-      <TouchableOpacity style={styles.upgradeBanner}>
-         <View>
-            <Text style={styles.upgradeTitle}>Upgrade to Ultimate</Text>
-            <Text style={styles.upgradeSubtitle}>See read receipts, travel mode & more</Text>
-         </View>
-         <Gem color={COLORS.navyDark} size={24} />
-      </TouchableOpacity>
-      
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Settings</Text>
-        <TouchableOpacity style={styles.row}>
-          <Text style={styles.rowText}>Edit Profile</Text>
-          <ArrowRight color={COLORS.gray} size={20} />
+          <TouchableOpacity style={styles.row}>
+            <Text style={styles.rowText}>Privacy & Safety</Text>
+            <ArrowRight color={COLORS.gray} size={20} />
+          </TouchableOpacity>
+        </View>
+        
+        <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+          <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.row}>
-          <Text style={styles.rowText}>Discovery Settings</Text>
-          <ArrowRight color={COLORS.gray} size={20} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.row}>
-          <Text style={styles.rowText}>Notifications</Text>
-          <ArrowRight color={COLORS.gray} size={20} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.row}>
-          <Text style={styles.rowText}>Privacy & Safety</Text>
-          <ArrowRight color={COLORS.gray} size={20} />
-        </TouchableOpacity>
-      </View>
-      
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-        <Text style={styles.logoutText}>Log Out</Text>
-      </TouchableOpacity>
-      <Text style={styles.versionText}>Version 1.0.0 (Build 42)</Text>
-    </ScrollView>
-  </SafeAreaView>
-);
+        <Text style={styles.versionText}>Version 1.2.0 (Build 56)</Text>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 // --- NAVIGATION MOCK ---
 const TabBar = ({ currentTab, setTab }: any) => (
@@ -668,46 +892,48 @@ export default function VirginsMobileApp() {
   const [screen, setScreen] = useState('welcome'); 
   const [tab, setTab] = useState('discover');
   
-  // Fake context provider wrapper
-  const [user, setUser] = useState<any>(null);
+  // Fake context provider wrapper (logic moved to AuthProvider)
   
-  const login = () => {
-    setUser({ name: 'User' });
-    setScreen('main');
-  };
-  
-  const logout = () => {
-    setUser(null);
-    setScreen('welcome');
-  };
+  const MainStack = () => {
+    // Nav stacks
+    if (screen === 'welcome') return <WelcomeScreen navigation={{ navigate: setScreen }} />;
+    if (screen === 'Login') return <LoginScreen navigation={{ goBack: () => setScreen('welcome'), navigate: setScreen }} />;
+    if (screen === 'SignUp') return <SignUpScreen navigation={{ goBack: () => setScreen('welcome'), navigate: setScreen }} />;
+    if (screen === 'EmailVerification') return <EmailVerificationScreen navigation={{ navigate: setScreen }} route={{ params: { email: 'demo@user.com' } }} />;
+    
+    // Profile Setup Flow
+    if (screen === 'ProfileSetup1') return <ProfileSetup1 navigation={{ navigate: setScreen }} />;
+    if (screen === 'ProfileSetup2') return <ProfileSetup2 navigation={{ navigate: setScreen }} />;
+    if (screen === 'ProfileSetup3') return <ProfileSetup3 navigation={{ navigate: setScreen }} />;
+    if (screen === 'ProfileSetup4') return <ProfileSetup4 navigation={{ navigate: setScreen }} />;
+    if (screen === 'Verification') return <VerificationScreen navigation={{ navigate: setScreen }} />;
+    
+    // Paywall
+    if (screen === 'Paywall') return <PaywallScreen navigation={{ goBack: () => setScreen('main') }} />;
 
-  // Nav stacks
-  if (screen === 'welcome') return <WelcomeScreen navigation={{ navigate: setScreen }} />;
-  if (screen === 'Login') return <LoginScreen navigation={{ goBack: () => setScreen('welcome'), navigate: setScreen }} />;
-  if (screen === 'SignUp') return <SignUpScreen navigation={{ goBack: () => setScreen('welcome'), navigate: setScreen }} />;
-  if (screen === 'EmailVerification') return <EmailVerificationScreen navigation={{ navigate: setScreen }} route={{ params: { email: 'demo@user.com' } }} />;
-  
-  // Profile Setup Flow
-  if (screen === 'ProfileSetup1') return <ProfileSetup1 navigation={{ navigate: setScreen }} />;
-  if (screen === 'ProfileSetup2') return <ProfileSetup2 navigation={{ navigate: setScreen }} />;
-  if (screen === 'ProfileSetup3') return <ProfileSetup3 navigation={{ navigate: setScreen }} />;
-  if (screen === 'ProfileSetup4') return <ProfileSetup4 navigation={{ navigate: setScreen }} />;
-  if (screen === 'Verification') return <AuthContext.Provider value={{ login }}><VerificationScreen navigation={{ navigate: setScreen }} /></AuthContext.Provider>;
-  
-  // Main App
-  if (screen === 'chat') return <ChatScreen onBack={() => setScreen('main')} />;
+    // Main App
+    if (screen === 'chat') return <ChatScreen onBack={() => setScreen('main')} navigation={{ navigate: setScreen }} />;
+
+    const { logout } = useContext(AuthContext);
+
+    return (
+      <View style={{ flex: 1, backgroundColor: COLORS.navyDark }}>
+        <StatusBar barStyle="light-content" />
+        <View style={{ flex: 1 }}>
+          {tab === 'discover' && <DiscoverScreen navigation={{ navigate: setScreen }} />}
+          {tab === 'likes' && <LikesScreen navigation={{ navigate: setScreen }} />}
+          {tab === 'messages' && <MessagesScreen onChatOpen={() => setScreen('chat')} navigation={{ navigate: setScreen }} />}
+          {tab === 'profile' && <ProfileScreen logout={() => {logout(); setScreen('welcome')}} navigation={{ navigate: setScreen }} />}
+        </View>
+        <TabBar currentTab={tab} setTab={setTab} />
+      </View>
+    );
+  }
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.navyDark }}>
-      <StatusBar barStyle="light-content" />
-      <View style={{ flex: 1 }}>
-        {tab === 'discover' && <DiscoverScreen />}
-        {tab === 'likes' && <LikesScreen />}
-        {tab === 'messages' && <MessagesScreen onChatOpen={() => setScreen('chat')} />}
-        {tab === 'profile' && <ProfileScreen logout={logout} />}
-      </View>
-      <TabBar currentTab={tab} setTab={setTab} />
-    </View>
+    <AuthProvider>
+      <MainStack />
+    </AuthProvider>
   );
 }
 
@@ -771,6 +997,29 @@ const styles = StyleSheet.create({
   checkCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.goldMid, alignItems: 'center', justifyContent: 'center', marginRight: 15 },
   circle: { width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: COLORS.gray, alignItems: 'center', justifyContent: 'center', marginRight: 15 },
   stepText: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
+
+  // Paywall
+  paywallContainer: { flex: 1, backgroundColor: COLORS.navyDark },
+  paywallBackground: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
+  paywallOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(26, 26, 46, 0.9)' },
+  closeButton: { alignSelf: 'flex-end', padding: 20 },
+  crownContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.goldMid, alignItems: 'center', justifyContent: 'center', marginBottom: 20, shadowColor: COLORS.goldLight, shadowRadius: 20, shadowOpacity: 0.5 },
+  paywallTitle: { fontSize: 26, color: COLORS.white, fontWeight: 'bold', fontFamily: FONTS.serif, marginBottom: 10 },
+  paywallSubtitle: { fontSize: 16, color: COLORS.gray, textAlign: 'center', marginHorizontal: 20 },
+  planCard: { backgroundColor: COLORS.navyMid, borderRadius: 16, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: '#333' },
+  planCardSelected: { borderColor: COLORS.goldMid, borderWidth: 2 },
+  ultimateCard: { backgroundColor: COLORS.goldMid },
+  popularBadge: { position: 'absolute', top: -12, alignSelf: 'center', backgroundColor: COLORS.navyDark, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+  popularText: { color: COLORS.goldMid, fontSize: 10, fontWeight: 'bold' },
+  planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.1)', paddingBottom: 15 },
+  planName: { fontSize: 20, fontWeight: 'bold', color: COLORS.white, fontFamily: FONTS.serif },
+  planPrice: { fontSize: 16, fontWeight: 'bold', color: COLORS.goldMid },
+  planFeatures: { gap: 10 },
+  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  featureText: { color: COLORS.white, fontSize: 14 },
+  disclaimerText: { fontSize: 10, color: COLORS.gray, textAlign: 'center', marginTop: 20 },
+  paywallFooter: { padding: 20, borderTopWidth: 1, borderTopColor: '#333', backgroundColor: COLORS.navyDark },
+  restoreText: { color: COLORS.gray, textAlign: 'center', fontSize: 12 },
 
   // Main Headers
   header: { padding: 15, paddingTop: Platform.OS === 'ios' ? 10 : 40, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.navyDark },
@@ -852,7 +1101,7 @@ const styles = StyleSheet.create({
   statBox: { alignItems: 'center' },
   statNum: { color: COLORS.white, fontSize: 20, fontWeight: 'bold' },
   statLabel: { color: COLORS.gray, fontSize: 12 },
-  upgradeBanner: { margin: 20, padding: 15, borderRadius: 12, backgroundColor: 'linear-gradient(45deg, #D4A574, #B8860B)', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: COLORS.goldLight }, // Linear gradient requires lib in RN, using solid for mock
+  upgradeBanner: { margin: 20, padding: 15, borderRadius: 12, backgroundColor: COLORS.goldMid, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', shadowColor: COLORS.goldLight, shadowOpacity: 0.5, shadowRadius: 10 },
   upgradeTitle: { color: COLORS.navyDark, fontWeight: 'bold', fontSize: 18 },
   upgradeSubtitle: { color: COLORS.navyDark, fontSize: 12 },
   section: { padding: 20 },

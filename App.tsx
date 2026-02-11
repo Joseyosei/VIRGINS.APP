@@ -11,6 +11,8 @@ import Testimonials from './components/Testimonials';
 import DownloadSection from './components/DownloadSection';
 import Footer from './components/Footer';
 import WaitlistPage from './components/WaitlistPage';
+import MatchmakerDemo from './components/MatchmakerDemo';
+import AdminDashboard from './components/AdminDashboard';
 
 // Pages
 import { HowItWorks, Pricing } from './components/ProductPages';
@@ -34,6 +36,10 @@ const App: React.FC = () => {
         );
       case 'waitlist':
         return <WaitlistPage onNavigate={setCurrentPage} />;
+      case 'matchmaker':
+        return <MatchmakerDemo />;
+      case 'admin':
+        return <AdminDashboard />;
       case 'how-it-works':
         return <HowItWorks onNavigate={setCurrentPage} />;
       case 'pricing':
@@ -63,8 +69,8 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <Header onNavigate={setCurrentPage} currentPage={currentPage} />
       {renderPage()}
-      {/* Hide footer on waitlist page for cleaner look, or keep it. Let's keep it but simplified if needed. */}
-      {currentPage !== 'waitlist' && <Footer onNavigate={setCurrentPage} />}
+      {/* Hide footer on waitlist/admin page for cleaner look. */}
+      {currentPage !== 'waitlist' && currentPage !== 'admin' && <Footer onNavigate={setCurrentPage} />}
     </div>
   );
 };

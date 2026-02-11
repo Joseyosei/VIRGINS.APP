@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Star, UserPlus, Shield, Heart } from 'lucide-react';
+import { Check, X, Shield, Heart, Zap, UserPlus, Lock, Crown } from 'lucide-react';
 import { PageView } from '../types';
 
 interface PageProps {
@@ -81,6 +81,46 @@ export const HowItWorks: React.FC<PageProps> = ({ onNavigate }) => {
 };
 
 export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
+  const features = [
+    {
+      category: "Core Experience",
+      items: [
+        { name: "Create Verified Profile", guest: true, covenant: true },
+        { name: "Browse Matches", guest: true, covenant: true },
+        { name: "Send Likes", guest: "Limited (5/day)", covenant: "Unlimited" },
+        { name: "Messaging", guest: "Mutual Match Only", covenant: "Unlimited" },
+        { name: "See Who Liked You", guest: false, covenant: true },
+      ]
+    },
+    {
+      category: "Safety & Security",
+      items: [
+        { name: "Photo Verification (AI + Human)", guest: true, covenant: true },
+        { name: "Video Verification Badge", guest: true, covenant: true },
+        { name: "Panic Button & Date Check-in", guest: true, covenant: true },
+        { name: "Premium Background Check Badge", guest: false, covenant: true },
+      ]
+    },
+    {
+      category: "Faith & Planning",
+      items: [
+        { name: "Basic Denomination Filter", guest: true, covenant: true },
+        { name: "Advanced Theology Filters", guest: false, covenant: true },
+        { name: "Date Planning Tools", guest: false, covenant: true },
+        { name: "\"We Met\" Feedback System", guest: false, covenant: true },
+      ]
+    },
+    {
+      category: "Premium Features",
+      items: [
+        { name: "Travel Mode (Match in other cities)", guest: false, covenant: true },
+        { name: "Advanced Relationship Analytics", guest: false, covenant: true },
+        { name: "Read Receipts", guest: false, covenant: true },
+        { name: "Profile Boost (Spotlight)", guest: false, covenant: "1/mo Included" },
+      ]
+    }
+  ];
+
   return (
     <div className="pt-32 pb-24 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -90,69 +130,108 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
             Invest in Your Future
           </p>
           <p className="mt-4 max-w-2xl text-xl text-slate-500 mx-auto">
-            Transparent pricing for serious daters.
+            Choose the plan that fits your journey.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Basic Plan */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        {/* Pricing Cards Header */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
+          {/* Guest Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
             <h3 className="text-xl font-medium text-slate-900 font-serif">Guest</h3>
-            <p className="mt-4 flex items-baseline text-slate-900">
+            <p className="mt-4 flex items-baseline justify-center text-slate-900">
               <span className="text-4xl font-extrabold tracking-tight">$0</span>
               <span className="ml-1 text-xl font-semibold text-slate-500">/mo</span>
             </p>
-            <p className="mt-6 text-slate-500">Perfect for looking around and getting a feel for the community.</p>
-            <ul className="mt-6 space-y-4">
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-green-500" /><span className="ml-3 text-slate-500">Create Profile</span></li>
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-green-500" /><span className="ml-3 text-slate-500">Browse Matches</span></li>
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-green-500" /><span className="ml-3 text-slate-500">Basic AI Profile Help</span></li>
-            </ul>
-            <button onClick={() => onNavigate('home')} className="mt-8 block w-full bg-slate-100 border border-transparent rounded-full py-3 px-6 text-center font-medium text-slate-900 hover:bg-slate-200">
-              Get Started
+            <p className="mt-4 text-sm text-slate-500">Get a feel for the community.</p>
+            <button 
+              onClick={() => onNavigate('waitlist')}
+              className="mt-6 w-full bg-slate-100 border border-transparent rounded-full py-3 px-6 text-center font-medium text-slate-900 hover:bg-slate-200"
+            >
+              Join for Free
             </button>
           </div>
 
-          {/* Premium Plan */}
-          <div className="bg-white rounded-2xl shadow-xl border-2 border-primary-500 p-8 transform scale-105 relative z-10">
-            <div className="absolute top-0 right-0 -mr-1 -mt-1 bg-primary-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg uppercase tracking-wide">
-              Most Popular
+          {/* Covenant Card */}
+          <div className="bg-navy-900 rounded-2xl shadow-xl border-2 border-gold-500 p-8 text-center relative transform md:-translate-y-4">
+            <div className="absolute top-0 right-0 left-0 -mt-4 flex justify-center">
+              <span className="bg-gold-500 text-navy-900 text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wide flex items-center gap-1 shadow-md">
+                <Crown className="w-3 h-3" /> Most Popular
+              </span>
             </div>
-            <h3 className="text-xl font-medium text-slate-900 font-serif">Covenant</h3>
-            <p className="mt-4 flex items-baseline text-slate-900">
+            <h3 className="text-xl font-medium text-white font-serif">Covenant</h3>
+            <p className="mt-4 flex items-baseline justify-center text-white">
               <span className="text-4xl font-extrabold tracking-tight">$29</span>
-              <span className="ml-1 text-xl font-semibold text-slate-500">/mo</span>
+              <span className="ml-1 text-xl font-semibold text-slate-400">/mo</span>
             </p>
-            <p className="mt-6 text-slate-500">For those ready to intentionally pursue marriage.</p>
-            <ul className="mt-6 space-y-4">
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-primary-500" /><span className="ml-3 text-slate-900">Everything in Guest</span></li>
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-primary-500" /><span className="ml-3 text-slate-900">Unlimited Messaging</span></li>
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-primary-500" /><span className="ml-3 text-slate-900">See Who Liked You</span></li>
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-primary-500" /><span className="ml-3 text-slate-900">Advanced Filters (Faith, Values)</span></li>
-            </ul>
-            <button onClick={() => onNavigate('home')} className="mt-8 block w-full bg-primary-600 border border-transparent rounded-full py-3 px-6 text-center font-bold text-white hover:bg-primary-700 shadow-lg shadow-primary-500/30">
-              Join Covenant
+            <p className="mt-4 text-sm text-slate-300">For serious dating & marriage.</p>
+            <button 
+              onClick={() => onNavigate('waitlist')}
+              className="mt-6 w-full bg-gradient-to-r from-gold-500 to-gold-600 border border-transparent rounded-full py-3 px-6 text-center font-bold text-navy-900 hover:bg-gold-400 shadow-lg shadow-gold-500/20"
+            >
+              Get Covenant
             </button>
+          </div>
+        </div>
+
+        {/* Comparison Table */}
+        <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden">
+          <div className="hidden md:grid grid-cols-12 bg-slate-50 border-b border-slate-200 p-4 text-sm font-bold text-slate-500 uppercase tracking-wider">
+            <div className="col-span-6 pl-4">Features</div>
+            <div className="col-span-3 text-center">Guest</div>
+            <div className="col-span-3 text-center text-primary-700">Covenant</div>
           </div>
 
-          {/* Concierge Plan */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-            <h3 className="text-xl font-medium text-slate-900 font-serif">Concierge</h3>
-            <p className="mt-4 flex items-baseline text-slate-900">
-              <span className="text-4xl font-extrabold tracking-tight">$99</span>
-              <span className="ml-1 text-xl font-semibold text-slate-500">/mo</span>
-            </p>
-            <p className="mt-6 text-slate-500">Personalized matchmaking assistance.</p>
-            <ul className="mt-6 space-y-4">
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-green-500" /><span className="ml-3 text-slate-500">Everything in Covenant</span></li>
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-green-500" /><span className="ml-3 text-slate-500">Profile Consultation</span></li>
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-green-500" /><span className="ml-3 text-slate-500">Priority Support</span></li>
-              <li className="flex items-start"><Check className="flex-shrink-0 h-5 w-5 text-green-500" /><span className="ml-3 text-slate-500">1-on-1 Coaching Session</span></li>
-            </ul>
-            <button onClick={() => onNavigate('home')} className="mt-8 block w-full bg-slate-100 border border-transparent rounded-full py-3 px-6 text-center font-medium text-slate-900 hover:bg-slate-200">
-              Apply Now
-            </button>
-          </div>
+          {features.map((section, idx) => (
+            <div key={idx}>
+              <div className="bg-slate-50/50 p-3 pl-8 text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                {section.category}
+              </div>
+              {section.items.map((item, itemIdx) => (
+                <div 
+                  key={itemIdx} 
+                  className="grid grid-cols-1 md:grid-cols-12 p-4 md:p-6 border-b border-slate-100 hover:bg-slate-50 transition-colors items-center"
+                >
+                  <div className="col-span-6 flex items-center gap-3 pl-2 mb-2 md:mb-0">
+                    <div className="md:hidden font-bold text-slate-900 flex-1">{item.name}</div>
+                    <div className="hidden md:block font-medium text-slate-900">{item.name}</div>
+                    {item.name.includes("Boost") && <Zap className="w-4 h-4 text-gold-500 hidden md:block" />}
+                    {item.name.includes("Background") && <Shield className="w-4 h-4 text-primary-500 hidden md:block" />}
+                  </div>
+                  
+                  {/* Guest Value */}
+                  <div className="col-span-3 flex md:justify-center items-center gap-2 md:gap-0">
+                    <span className="md:hidden text-xs text-slate-500 font-bold w-20">Guest:</span>
+                    {item.guest === true ? (
+                      <Check className="w-5 h-5 text-slate-400" />
+                    ) : item.guest === false ? (
+                      <div className="w-4 h-px bg-slate-300"></div> // Dash for "No"
+                    ) : (
+                      <span className="text-sm text-slate-500 font-medium">{item.guest}</span>
+                    )}
+                  </div>
+
+                  {/* Covenant Value */}
+                  <div className="col-span-3 flex md:justify-center items-center gap-2 md:gap-0 mt-2 md:mt-0">
+                    <span className="md:hidden text-xs text-primary-700 font-bold w-20">Covenant:</span>
+                    {item.covenant === true ? (
+                      <div className="flex items-center justify-center w-6 h-6 bg-green-100 rounded-full">
+                        <Check className="w-4 h-4 text-green-600" />
+                      </div>
+                    ) : (
+                      <span className="text-sm font-bold text-navy-900">{item.covenant}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 text-center">
+           <p className="text-slate-500 text-sm max-w-2xl mx-auto">
+             * Background checks are processed via a third-party secure provider. Verification badges are subject to manual review approval. Prices are in USD and may vary by region.
+           </p>
         </div>
       </div>
     </div>

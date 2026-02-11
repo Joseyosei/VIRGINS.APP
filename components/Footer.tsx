@@ -61,9 +61,19 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <p className="text-sm text-slate-500 text-center md:text-left">
             &copy; {new Date().getFullYear()} Virgins Dating App. All rights reserved.
           </p>
-          <p className="text-sm text-slate-600 mt-2 md:mt-0 flex items-center">
-            Designed with <span className="mx-1 text-red-900">♥</span> for Marriage
-          </p>
+          <div className="flex items-center gap-4 mt-2 md:mt-0">
+             <p className="text-sm text-slate-600 flex items-center">
+               Designed with <span className="mx-1 text-red-900">♥</span> for Marriage
+             </p>
+             {/* Hidden Admin Link */}
+             <button 
+               onClick={() => onNavigate('admin')}
+               className="text-xs text-navy-800 hover:text-navy-700 transition-colors"
+               title="Admin Access"
+             >
+               Admin
+             </button>
+          </div>
         </div>
       </div>
     </footer>

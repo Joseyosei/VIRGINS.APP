@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Mail, ArrowRight, CheckCircle, Loader2, Share2, Copy, MapPin, User, Heart } from 'lucide-react';
-import { PageView } from '../types';
+import { ShieldCheck, Mail, ArrowRight, CheckCircle, Loader2, Share2, Copy, MapPin, User, Heart, Calendar, BookOpen } from 'lucide-react';
+import { PageView, WaitlistUser } from '../types';
 
 interface WaitlistPageProps {
   onNavigate: (page: PageView) => void;
@@ -15,6 +15,8 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
   const [details, setDetails] = useState({
     name: '',
     gender: '',
+    age: '',
+    faith: '',
     city: ''
   });
 
@@ -55,6 +57,25 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
   const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
+    // SAVE USER DATA FOR ADMIN DASHBOARD
+    const newUser: WaitlistUser = {
+      id: crypto.randomUUID(),
+      email: email,
+      name: details.name,
+      gender: details.gender,
+      age: details.age,
+      faith: details.faith,
+      city: details.city,
+      joinedAt: new Date().toISOString(),
+      status: 'verified'
+    };
+
+    // Get existing users or empty array
+    const existingUsers = JSON.parse(localStorage.getItem('virgins_waitlist_data') || '[]');
+    // Add new user
+    localStorage.setItem('virgins_waitlist_data', JSON.stringify([newUser, ...existingUsers]));
+
     setTimeout(() => {
       setUserCount(prev => prev + 1);
       setPosition(userCount + 1);
@@ -174,6 +195,7 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                    <p className="text-sm text-slate-500">Help us customize your experience.</p>
                 </div>
                 
+                {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
                   <div className="relative">
@@ -191,6 +213,27 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                   </div>
                 </div>
 
+                {/* Age */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
+                  <div className="relative">
+                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Calendar className="h-4 w-4 text-slate-400" />
+                     </div>
+                     <input
+                        type="number"
+                        required
+                        min="18"
+                        max="99"
+                        className="block w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="e.g. 25"
+                        value={details.age}
+                        onChange={e => setDetails({...details, age: e.target.value})}
+                     />
+                  </div>
+                </div>
+
+                {/* Gender */}
                 <div>
                    <label className="block text-sm font-medium text-slate-700 mb-1">I am a...</label>
                    <div className="grid grid-cols-2 gap-3">
@@ -211,6 +254,25 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                    </div>
                 </div>
 
+                {/* Faith */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Faith / Tradition</label>
+                  <div className="relative">
+                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <BookOpen className="h-4 w-4 text-slate-400" />
+                     </div>
+                     <input
+                        type="text"
+                        required
+                        className="block w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="e.g. Catholic, Baptist, Traditional"
+                        value={details.faith}
+                        onChange={e => setDetails({...details, faith: e.target.value})}
+                     />
+                  </div>
+                </div>
+
+                {/* City */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
                   <div className="relative">
@@ -229,7 +291,7 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
 
                 <button
                   type="submit"
-                  disabled={loading || !details.name || !details.gender}
+                  disabled={loading || !details.name || !details.gender || !details.age || !details.faith}
                   className="w-full flex items-center justify-center py-3.5 px-6 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-navy-900 hover:bg-navy-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-900 transition-all mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Complete Registration'}
