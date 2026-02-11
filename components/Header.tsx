@@ -62,9 +62,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
           </nav>
           
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
-            <a href="#download" className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-6 py-2 border border-transparent rounded-full shadow-sm text-base font-bold text-navy-900 bg-gold-400 hover:bg-gold-500 transition-all hover:shadow-md">
-              Download App
-            </a>
+            <button 
+              onClick={() => handleNav('waitlist')}
+              className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-6 py-2 border border-transparent rounded-full shadow-sm text-base font-bold text-navy-900 bg-gold-400 hover:bg-gold-500 transition-all hover:shadow-md"
+            >
+              Join Waitlist
+            </button>
           </div>
         </div>
       </div>
@@ -94,6 +97,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
                 <nav className="grid gap-y-8">
                   <button onClick={() => handleNav('home')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
                     <span className="ml-3 text-base font-medium text-slate-900">Home</span>
+                  </button>
+                  <button onClick={() => handleNav('waitlist')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
+                    <span className="ml-3 text-base font-medium text-slate-900 font-bold text-primary-600">Join Waitlist</span>
                   </button>
                   <button onClick={() => handleNav('how-it-works')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
                     <span className="ml-3 text-base font-medium text-slate-900">How It Works</span>

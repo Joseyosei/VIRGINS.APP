@@ -31,7 +31,7 @@ import {
 } from 'react-native';
 // Note: In a real project, you would import these from '@react-navigation/...'
 // We are mocking navigation state for this single-file demonstration
-import { Heart, MessageCircle, User, Shield, Check, X, ArrowRight, Settings, Camera, Mic, Gem, ChevronLeft, Search, Filter, Lock } from 'lucide-react-native';
+import { Heart, MessageCircle, User, Shield, Check, X, ArrowRight, Settings, Camera, Mic, Gem, ChevronLeft, Search, Filter, Lock, Mail } from 'lucide-react-native';
 
 // --- THEME ---
 const COLORS = {
@@ -90,7 +90,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const register = (data: any) => {
     setIsLoading(true);
     setTimeout(() => {
-      setUser({ ...data, isVerified: false });
+      setUser({ ...data, isVerified: false, isEmailVerified: false });
       setIsLoading(false);
     }, 1500);
   };
@@ -109,8 +109,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 // --- COMPONENTS ---
-const GoldButton = ({ title, onPress, style }: any) => (
-  <TouchableOpacity style={[styles.primaryButton, style]} onPress={onPress}>
+const GoldButton = ({ title, onPress, style, disabled }: any) => (
+  <TouchableOpacity 
+    style={[styles.primaryButton, style, disabled && { opacity: 0.5 }]} 
+    onPress={onPress}
+    disabled={disabled}
+  >
     <Text style={styles.primaryButtonText}>{title}</Text>
   </TouchableOpacity>
 );
@@ -203,8 +207,8 @@ const SignUpScreen = ({ navigation }: any) => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleNext = () => {
-    // Validation would go here
-    navigation.navigate('ProfileSetup1');
+    // Navigate to Email Verification instead of Profile Setup
+    navigation.navigate('EmailVerification', { email });
   };
 
   return (
@@ -222,12 +226,61 @@ const SignUpScreen = ({ navigation }: any) => {
         <InputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
         <InputField placeholder="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
         
-        <GoldButton title="Create Account" onPress={handleNext} />
+        <GoldButton title="Continue" onPress={handleNext} />
         
         <Text style={styles.legalText}>
           By creating an account, you agree to our Terms of Service and Privacy Policy.
         </Text>
       </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
+
+// 3.5 EMAIL VERIFICATION SCREEN
+const EmailVerificationScreen = ({ navigation, route }: any) => {
+  const [isVerifying, setIsVerifying] = useState(false);
+  const email = route?.params?.email || 'your email';
+
+  const handleVerify = () => {
+    setIsVerifying(true);
+    // Simulate verification delay
+    setTimeout(() => {
+      setIsVerifying(false);
+      Alert.alert("Success", "Email verified successfully!", [
+        { text: "Continue", onPress: () => navigation.navigate('ProfileSetup1') }
+      ]);
+    }, 2000);
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={[styles.authContainer, { alignItems: 'center' }]}>
+        <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.navyMid, alignItems: 'center', justifyContent: 'center', marginBottom: 20, borderWidth: 1, borderColor: COLORS.goldMid }}>
+          <Mail color={COLORS.goldMid} size={40} />
+        </View>
+
+        <Text style={[styles.headerTitle, { textAlign: 'center' }]}>Verify your Email</Text>
+        <Text style={[styles.headerSubtitle, { textAlign: 'center', marginBottom: 40 }]}>
+          We've sent a verification link to {email}. Please click the link to verify your account.
+        </Text>
+
+        <View style={{ width: '100%', backgroundColor: '#252540', padding: 20, borderRadius: 12, marginBottom: 30, borderStyle: 'dashed', borderWidth: 1, borderColor: '#444' }}>
+          <Text style={{ color: '#888', fontSize: 12, marginBottom: 10, textTransform: 'uppercase', fontWeight: 'bold' }}>Simulate Email Action</Text>
+          <GoldButton 
+            title={isVerifying ? "Verifying..." : "Verify Email Address"} 
+            onPress={handleVerify}
+            disabled={isVerifying}
+          />
+        </View>
+
+        <TouchableOpacity>
+          <Text style={{ color: COLORS.goldMid, fontWeight: 'bold' }}>Resend Email</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={{ marginTop: 20 }} onPress={() => navigation.goBack()}>
+           <Text style={{ color: COLORS.gray }}>Use a different email</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -632,6 +685,7 @@ export default function VirginsMobileApp() {
   if (screen === 'welcome') return <WelcomeScreen navigation={{ navigate: setScreen }} />;
   if (screen === 'Login') return <LoginScreen navigation={{ goBack: () => setScreen('welcome'), navigate: setScreen }} />;
   if (screen === 'SignUp') return <SignUpScreen navigation={{ goBack: () => setScreen('welcome'), navigate: setScreen }} />;
+  if (screen === 'EmailVerification') return <EmailVerificationScreen navigation={{ navigate: setScreen }} route={{ params: { email: 'demo@user.com' } }} />;
   
   // Profile Setup Flow
   if (screen === 'ProfileSetup1') return <ProfileSetup1 navigation={{ navigate: setScreen }} />;

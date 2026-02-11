@@ -1,34 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { PageView } from './types';
+
+// Components
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Features from './components/Features';
+import CommunityGuidelines from './components/CommunityGuidelines';
 import AIProfileHelper from './components/AIProfileHelper';
 import Testimonials from './components/Testimonials';
 import DownloadSection from './components/DownloadSection';
 import Footer from './components/Footer';
-import CommunityGuidelines from './components/CommunityGuidelines';
-import { 
-  About, 
-  Careers, 
-  Press, 
-  Contact, 
-  Privacy, 
-  Terms, 
-  Cookies, 
-  Safety 
-} from './components/StaticPages';
-import { HowItWorks, Pricing } from './components/ProductPages';
-import { PageView } from './types';
+import WaitlistPage from './components/WaitlistPage';
 
-export default function App() {
+// Pages
+import { HowItWorks, Pricing } from './components/ProductPages';
+import { About, Careers, Press, Contact, Privacy, Terms, Cookies, Safety } from './components/StaticPages';
+
+const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
 
-  // Scroll to top on page change
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [currentPage]);
-
-  const renderContent = () => {
+  const renderPage = () => {
     switch (currentPage) {
       case 'home':
         return (
@@ -41,6 +32,8 @@ export default function App() {
             <DownloadSection />
           </main>
         );
+      case 'waitlist':
+        return <WaitlistPage onNavigate={setCurrentPage} />;
       case 'how-it-works':
         return <HowItWorks onNavigate={setCurrentPage} />;
       case 'pricing':
@@ -62,21 +55,18 @@ export default function App() {
       case 'safety':
         return <Safety />;
       default:
-        return (
-          <main>
-            <Hero onNavigate={setCurrentPage} />
-            <Features />
-            <DownloadSection />
-          </main>
-        );
+        return <Hero onNavigate={setCurrentPage} />;
     }
   };
 
   return (
-    <div className="app-container min-h-screen bg-white font-sans text-slate-900 selection:bg-primary-100 selection:text-primary-900">
+    <div className="min-h-screen bg-white font-sans text-slate-900">
       <Header onNavigate={setCurrentPage} currentPage={currentPage} />
-      {renderContent()}
-      <Footer onNavigate={setCurrentPage} />
+      {renderPage()}
+      {/* Hide footer on waitlist page for cleaner look, or keep it. Let's keep it but simplified if needed. */}
+      {currentPage !== 'waitlist' && <Footer onNavigate={setCurrentPage} />}
     </div>
   );
-}
+};
+
+export default App;

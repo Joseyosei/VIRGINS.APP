@@ -2,6 +2,7 @@ import React from 'react';
 
 export type PageView = 
   | 'home' 
+  | 'waitlist'
   | 'about' 
   | 'careers' 
   | 'press' 
