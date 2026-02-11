@@ -7,7 +7,7 @@
  * 
  * INSTRUCTIONS:
  * 1. Create a new Expo project: npx create-expo-app virgins-mobile
- * 2. Install dependencies: npm install @react-navigation/native @react-navigation/stack @react-navigation/bottom-tabs react-native-safe-area-context react-native-screens lucide-react-native
+ * 2. Install dependencies: npm install @react-navigation/native @react-navigation/stack @react-navigation/bottom-tabs react-native-safe-area-context react-native-screens lucide-react-native expo-image-picker
  * 3. Copy this content into your App.tsx
  */
 
@@ -33,6 +33,7 @@ import {
 // Note: In a real project, you would import these from '@react-navigation/...'
 // We are mocking navigation state for this single-file demonstration
 import { Heart, MessageCircle, User, Shield, Check, X, ArrowRight, Settings, Camera, Mic, Gem, ChevronLeft, Search, Filter, Lock, Mail, Star, Crown, Zap, Eye, CheckCircle } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 // --- THEME ---
 const COLORS = {
@@ -511,6 +512,38 @@ const ProfileSetup3 = ({ navigation }: any) => {
 
 // Step 4: Photos
 const ProfileSetup4 = ({ navigation }: any) => {
+  const [photos, setPhotos] = useState<(string | null)[]>([null, null, null, null, null, null]);
+
+  const pickImage = async (index: number) => {
+    // Request permissions
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Sorry, we need camera roll permissions to make this work!');
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 5],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const newPhotos = [...photos];
+      newPhotos[index] = result.assets[0].uri;
+      setPhotos(newPhotos);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newPhotos = [...photos];
+    newPhotos[index] = null;
+    setPhotos(newPhotos);
+  };
+
+  const photoCount = photos.filter(p => p !== null).length;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.contentContainer}>
@@ -521,15 +554,35 @@ const ProfileSetup4 = ({ navigation }: any) => {
         <Text style={styles.stepSubtitle}>Upload at least 2 photos to continue.</Text>
         
         <View style={styles.photoGrid}>
-          {[1,2,3,4,5,6].map(i => (
-             <TouchableOpacity key={i} style={styles.photoSlot}>
-               <Camera color={COLORS.goldMid} size={24} />
+          {photos.map((photo, index) => (
+             <TouchableOpacity 
+                key={index} 
+                style={[styles.photoSlot, photo ? {borderStyle: 'solid', borderWidth: 0, backgroundColor: '#000'} : {}]}
+                onPress={() => photo ? removeImage(index) : pickImage(index)}
+             >
+               {photo ? (
+                 <>
+                   <Image source={{ uri: photo }} style={{ width: '100%', height: '100%', borderRadius: 10 }} />
+                   <View style={{ position: 'absolute', top: 5, right: 5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 10, padding: 4 }}>
+                      <X color="#fff" size={14} />
+                   </View>
+                 </>
+               ) : (
+                 <>
+                   <Camera color={COLORS.goldMid} size={24} />
+                   <Text style={{color: COLORS.gray, fontSize: 10, marginTop: 4}}>{index === 0 ? 'Main' : `Photo ${index+1}`}</Text>
+                 </>
+               )}
              </TouchableOpacity>
           ))}
         </View>
 
         <View style={{flex: 1}} />
-        <GoldButton title="Complete Profile" onPress={() => navigation.navigate('Verification')} />
+        <GoldButton 
+            title={photoCount >= 2 ? "Complete Profile" : `Upload ${2 - photoCount} more`} 
+            onPress={() => navigation.navigate('Verification')} 
+            disabled={photoCount < 2}
+        />
       </View>
     </SafeAreaView>
   );

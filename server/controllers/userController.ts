@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import crypto from 'crypto';
 import User from '../models/User';
 import * as geminiService from '../services/geminiService';
 import * as veoService from '../services/veoService';
@@ -12,10 +13,52 @@ export const registerUser = async (req: any, res: any) => {
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
-    const user = await User.create(req.body);
-    res.status(201).json(user);
+
+    // Generate verification token
+    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+
+    const user = await User.create({
+      ...req.body,
+      emailVerificationToken,
+      isEmailVerified: false
+    });
+
+    // Simulate sending email (Log to console)
+    const verificationLink = `${req.protocol}://${req.get('host')}/api/users/verify-email/${emailVerificationToken}`;
+    console.log(`[EMAIL SERVICE] To: ${email} | Subject: Verify your Virgins account`);
+    console.log(`[EMAIL SERVICE] Link: ${verificationLink}`);
+
+    res.status(201).json({
+      message: 'Registration successful. Please check your email to verify your account.',
+      userId: user._id
+    });
   } catch (error: any) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// Verify Email
+export const verifyUserEmail = async (req: any, res: any) => {
+  try {
+    const { token } = req.params;
+    const user = await User.findOne({ emailVerificationToken: token });
+
+    if (!user) {
+      return res.status(400).send('<h1>Invalid or expired verification link.</h1>');
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    await user.save();
+
+    res.send(`
+      <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+        <h1 style="color: #4CAF50;">Email Verified Successfully!</h1>
+        <p>Your account is now active. You may return to the app.</p>
+      </div>
+    `);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
   }
 };
 

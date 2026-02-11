@@ -1,6 +1,7 @@
 import express from 'express';
 import { 
   registerUser, 
+  verifyUserEmail,
   createAiBio, 
   editPhoto, 
   createVideoIntro, 
@@ -12,6 +13,7 @@ const router = express.Router();
 
 // Auth & Profile
 router.post('/register', registerUser);
+router.get('/verify-email/:token', verifyUserEmail);
 
 // AI Features
 router.post('/generate-bio', createAiBio);
