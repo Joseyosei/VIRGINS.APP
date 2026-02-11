@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Search, Users, Download, ShieldCheck, Clock, UserCheck, Heart } from 'lucide-react';
+import { Lock, Search, Users, Download, ShieldCheck, Clock, UserCheck, Heart, TrendingUp } from 'lucide-react';
 import { WaitlistUser } from '../types';
 
 const AdminDashboard: React.FC = () => {
@@ -7,6 +7,7 @@ const AdminDashboard: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [users, setUsers] = useState<WaitlistUser[]>([]);
+  const [marketingCount, setMarketingCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Load users from localStorage on mount
@@ -31,6 +32,9 @@ const AdminDashboard: React.FC = () => {
           }
         ]);
       }
+
+      const storedCount = localStorage.getItem('virgins_user_count');
+      setMarketingCount(storedCount ? parseInt(storedCount, 10) : 54896);
     }
   }, [isAuthenticated]);
 
@@ -121,14 +125,24 @@ const AdminDashboard: React.FC = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Live Marketing Count</h3>
+              <TrendingUp className="w-5 h-5 text-gold-500" />
+            </div>
+            <p className="text-3xl font-bold text-navy-900 relative z-10">{marketingCount.toLocaleString()}</p>
+            <p className="text-xs text-slate-400 mt-2 relative z-10">Displayed on Hero</p>
+            <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-gold-50 rounded-full opacity-50 z-0"></div>
+          </div>
+
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Signups</h3>
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Actual Signups</h3>
               <Users className="w-5 h-5 text-primary-500" />
             </div>
             <p className="text-3xl font-bold text-slate-900">{stats.total.toLocaleString()}</p>
             <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-green-500"></span> Live Count
+              <span className="w-2 h-2 rounded-full bg-green-500"></span> Live Database
             </p>
           </div>
 
@@ -139,26 +153,25 @@ const AdminDashboard: React.FC = () => {
             </div>
             <p className="text-3xl font-bold text-slate-900">{stats.verified.toLocaleString()}</p>
             <div className="w-full bg-slate-100 rounded-full h-1.5 mt-3">
-              <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${(stats.verified / stats.total) * 100}%` }}></div>
+              <div className="bg-green-500 h-1.5 rounded-full" style={{ width: stats.total > 0 ? `${(stats.verified / stats.total) * 100}%` : '0%' }}></div>
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Men</h3>
-              <UserCheck className="w-5 h-5 text-blue-500" />
-            </div>
-            <p className="text-3xl font-bold text-slate-900">{stats.men.toLocaleString()}</p>
-            <p className="text-xs text-slate-400 mt-2">{Math.round((stats.men / stats.total) * 100)}% of userbase</p>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Women</h3>
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Demographics</h3>
               <Heart className="w-5 h-5 text-pink-500" />
             </div>
-            <p className="text-3xl font-bold text-slate-900">{stats.women.toLocaleString()}</p>
-            <p className="text-xs text-slate-400 mt-2">{Math.round((stats.women / stats.total) * 100)}% of userbase</p>
+            <div className="flex justify-between items-end">
+               <div>
+                  <p className="text-2xl font-bold text-slate-900">{stats.men.toLocaleString()}</p>
+                  <p className="text-xs text-slate-500">Men</p>
+               </div>
+               <div>
+                  <p className="text-2xl font-bold text-slate-900">{stats.women.toLocaleString()}</p>
+                  <p className="text-xs text-slate-500">Women</p>
+               </div>
+            </div>
           </div>
         </div>
 

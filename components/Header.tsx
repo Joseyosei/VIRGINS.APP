@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 import { PageView } from '../types';
 
 interface HeaderProps {
@@ -9,6 +9,16 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Add scroll effect for "modern" feel
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleNav = (page: PageView) => {
     onNavigate(page);
@@ -16,37 +26,49 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   };
 
   const navItemClass = (page: PageView) => 
-    `text-base font-medium transition-colors cursor-pointer ${currentPage === page ? 'text-primary-600' : 'text-slate-500 hover:text-slate-900'}`;
+    `text-sm font-medium transition-all duration-200 cursor-pointer px-4 py-2 rounded-full hover:bg-slate-50 ${
+      currentPage === page 
+        ? 'text-navy-900 font-semibold bg-slate-50' 
+        : 'text-slate-500 hover:text-navy-900'
+    }`;
 
   // Custom Logo Component
   const RingsLogo = ({ className }: { className?: string }) => (
     <svg viewBox="0 0 100 80" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Left Ring */}
       <circle cx="35" cy="45" r="22" stroke="#D4A574" strokeWidth="5" />
-      {/* Right Ring */}
       <circle cx="65" cy="45" r="22" stroke="#D4A574" strokeWidth="5" />
-      {/* Diamond at intersection */}
       <path d="M50 12 L60 28 L50 44 L40 28 Z" fill="#D4A574" stroke="white" strokeWidth="1" />
     </svg>
   );
 
   return (
-    <header className="fixed w-full bg-white/95 backdrop-blur-md z-50 border-b border-slate-100">
+    <header 
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        scrolled 
+          ? 'bg-white/90 backdrop-blur-xl shadow-sm py-3 border-b border-slate-100' 
+          : 'bg-transparent py-6'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4 md:justify-start md:space-x-10">
+        <div className="flex justify-between items-center">
+          
+          {/* Logo Section */}
           <div className="flex justify-start lg:w-0 lg:flex-1">
             <button onClick={() => handleNav('home')} className="flex items-center gap-3 group">
-              <div className="transition-transform group-hover:scale-105">
-                 <RingsLogo className="h-10 w-auto" />
+              <div className="transition-transform duration-300 group-hover:scale-110">
+                 <RingsLogo className="h-9 w-auto" />
               </div>
-              <span className="text-2xl font-serif font-bold text-navy-900 tracking-widest uppercase">Virgins</span>
+              <span className="text-2xl font-serif font-bold tracking-widest uppercase text-navy-900">
+                Virgins
+              </span>
             </button>
           </div>
           
+          {/* Mobile Menu Button */}
           <div className="-mr-2 -my-2 md:hidden">
             <button
               type="button"
-              className="bg-white rounded-md p-2 inline-flex items-center justify-center text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+              className="bg-white/50 backdrop-blur rounded-full p-2 inline-flex items-center justify-center text-slate-600 hover:text-navy-900 hover:bg-slate-100 focus:outline-none transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <span className="sr-only">Open menu</span>
@@ -54,17 +76,18 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
             </button>
           </div>
 
-          <nav className="hidden md:flex space-x-10 items-center">
+          {/* Desktop Navigation - Centered & Floating Pill */}
+          <nav className="hidden md:flex space-x-2 items-center bg-white/70 px-6 py-2 rounded-full backdrop-blur-md border border-white/20 shadow-sm ring-1 ring-slate-900/5">
             <button onClick={() => handleNav('home')} className={navItemClass('home')}>Home</button>
-            <button onClick={() => handleNav('matchmaker')} className={navItemClass('matchmaker')}>Algorithm</button>
             <button onClick={() => handleNav('how-it-works')} className={navItemClass('how-it-works')}>How It Works</button>
             <button onClick={() => handleNav('pricing')} className={navItemClass('pricing')}>Pricing</button>
           </nav>
           
+          {/* CTA Button */}
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
             <button 
               onClick={() => handleNav('waitlist')}
-              className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-6 py-2 border border-transparent rounded-full shadow-sm text-base font-bold text-navy-900 bg-gold-400 hover:bg-gold-500 transition-all hover:shadow-md"
+              className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full shadow-lg text-sm font-bold text-white bg-navy-900 hover:bg-navy-800 transition-all hover:-translate-y-0.5 hover:shadow-xl ring-2 ring-transparent hover:ring-gold-400"
             >
               Join Waitlist
             </button>
@@ -75,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="absolute top-0 inset-x-0 p-2 transition transform origin-top-right md:hidden">
-          <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50">
+          <div className="rounded-2xl shadow-2xl ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50">
             <div className="pt-5 pb-6 px-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -85,7 +108,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
                 <div className="-mr-2">
                   <button
                     type="button"
-                    className="bg-white rounded-md p-2 inline-flex items-center justify-center text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+                    className="bg-white rounded-md p-2 inline-flex items-center justify-center text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="sr-only">Close menu</span>
@@ -94,21 +117,19 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
                 </div>
               </div>
               <div className="mt-6">
-                <nav className="grid gap-y-8">
-                  <button onClick={() => handleNav('home')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
+                <nav className="grid gap-y-4">
+                  <button onClick={() => handleNav('home')} className="p-3 flex items-center rounded-xl hover:bg-slate-50 transition-colors">
                     <span className="ml-3 text-base font-medium text-slate-900">Home</span>
                   </button>
-                  <button onClick={() => handleNav('matchmaker')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
-                    <span className="ml-3 text-base font-medium text-slate-900">Algorithm Demo</span>
-                  </button>
-                  <button onClick={() => handleNav('waitlist')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
-                    <span className="ml-3 text-base font-medium text-slate-900 font-bold text-primary-600">Join Waitlist</span>
-                  </button>
-                  <button onClick={() => handleNav('how-it-works')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
+                  <button onClick={() => handleNav('how-it-works')} className="p-3 flex items-center rounded-xl hover:bg-slate-50 transition-colors">
                     <span className="ml-3 text-base font-medium text-slate-900">How It Works</span>
                   </button>
-                  <button onClick={() => handleNav('pricing')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
+                  <button onClick={() => handleNav('pricing')} className="p-3 flex items-center rounded-xl hover:bg-slate-50 transition-colors">
                     <span className="ml-3 text-base font-medium text-slate-900">Pricing</span>
+                  </button>
+                  <button onClick={() => handleNav('waitlist')} className="mt-4 p-3 flex items-center rounded-xl bg-navy-50 hover:bg-navy-100 transition-colors group border border-navy-100">
+                    <span className="ml-3 text-base font-bold text-navy-900 group-hover:text-navy-700">Join Waitlist</span>
+                    <ArrowRight className="ml-auto w-5 h-5 text-navy-900" />
                   </button>
                 </nav>
               </div>

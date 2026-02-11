@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Mail, CheckCircle, Loader2, Inbox, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Mail, CheckCircle, Loader2, Inbox, ArrowRight, MapPin } from 'lucide-react';
 import { PageView } from '../types';
 
 interface HeroProps {
   onNavigate: (page: PageView) => void;
 }
 
+const LOCATIONS = ['Austin, TX', 'Dallas, TX', 'Houston, TX', 'Nashville, TN', 'Charlotte, NC', 'Atlanta, GA', 'Denver, CO', 'Miami, FL', 'Chicago, IL'];
+
 const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   const [email, setEmail] = useState('');
   const [step, setStep] = useState<'input' | 'verify' | 'success'>('input');
   const [loading, setLoading] = useState(false);
+  const [recentJoin, setRecentJoin] = useState<{city: string, time: number} | null>(null);
   
   // Initialize count from local storage to simulate persistence or default to the number in the screenshot
   const [userCount, setUserCount] = useState(() => {
@@ -25,15 +28,39 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
     localStorage.setItem('virgins_user_count', userCount.toString());
   }, [userCount]);
 
-  // Simulate "Real-time" activity
+  // Simulate "Real-time" activity: Counter Growth & Join Notifications
   useEffect(() => {
-    const interval = setInterval(() => {
+    // 1. Counter growth
+    const growthInterval = setInterval(() => {
       // Randomly decide to add a user (30% chance every 4 seconds) to simulate live traffic
       if (Math.random() > 0.7) {
         setUserCount(prev => prev + 1);
       }
     }, 4000);
-    return () => clearInterval(interval);
+
+    // 2. Live "Just Joined" Notifications
+    const notificationInterval = setInterval(() => {
+      if (Math.random() > 0.6) {
+        const city = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+        setRecentJoin({ city, time: Date.now() });
+        // Hide notification after 4 seconds
+        setTimeout(() => setRecentJoin(null), 4000);
+      }
+    }, 8000);
+
+    // 3. Listen for storage changes (e.g. from WaitlistPage in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'virgins_user_count' && e.newValue) {
+        setUserCount(parseInt(e.newValue, 10));
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      clearInterval(growthInterval);
+      clearInterval(notificationInterval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const handleSignup = (e: React.FormEvent) => {
@@ -58,11 +85,30 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
       // Increment user count only after successful verification
       setUserCount(prev => prev + 1);
       setLoading(false);
+      
+      // Auto-navigate to waitlist details page after short delay? 
+      // Or let them stay here. The prompt asks for waitlist page for full details.
+      // We'll keep them here as it's a quick capture.
     }, 1500);
   };
 
   return (
     <div className="relative bg-slate-50 pt-20 pb-20 lg:pt-32 lg:pb-32 overflow-hidden">
+      {/* Live Notification Toast */}
+      {recentJoin && (
+        <div className="fixed top-24 right-4 md:right-8 z-50 animate-fadeIn">
+          <div className="bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl rounded-full py-2 px-4 flex items-center gap-3">
+             <div className="relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+             </div>
+             <p className="text-xs font-medium text-slate-700">
+               Someone from <span className="font-bold text-navy-900">{recentJoin.city}</span> joined
+             </p>
+          </div>
+        </div>
+      )}
+
       {/* Decorative background elements */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full overflow-hidden z-0">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
@@ -150,9 +196,15 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 <CheckCircle className="w-6 h-6 mr-2" />
                 <span>Email Verified!</span>
               </div>
-              <p className="text-green-600 text-sm">
-                Your account has been created and verified. Welcome to the community!
+              <p className="text-green-600 text-sm mb-4">
+                Your account has been created. Complete your profile to move up the waitlist.
               </p>
+              <button 
+                onClick={() => onNavigate('waitlist')}
+                className="text-sm font-bold text-primary-600 hover:text-primary-700 underline"
+              >
+                Complete Profile &rarr;
+              </button>
             </div>
           )}
           

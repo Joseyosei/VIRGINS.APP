@@ -89,7 +89,7 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
         { name: "Browse Matches", guest: true, covenant: true },
         { name: "Send Likes", guest: "Limited (5/day)", covenant: "Unlimited" },
         { name: "Messaging", guest: "Mutual Match Only", covenant: "Unlimited" },
-        { name: "See Who Liked You", guest: false, covenant: true },
+        { name: "See Who Liked You", guest: true, covenant: true },
       ]
     },
     {
@@ -136,9 +136,9 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
 
         {/* Pricing Cards Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-          {/* Guest Card */}
+          {/* Free Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
-            <h3 className="text-xl font-medium text-slate-900 font-serif">Guest</h3>
+            <h3 className="text-xl font-medium text-slate-900 font-serif">Free</h3>
             <p className="mt-4 flex items-baseline justify-center text-slate-900">
               <span className="text-4xl font-extrabold tracking-tight">$0</span>
               <span className="ml-1 text-xl font-semibold text-slate-500">/mo</span>
@@ -178,7 +178,7 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
         <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden">
           <div className="hidden md:grid grid-cols-12 bg-slate-50 border-b border-slate-200 p-4 text-sm font-bold text-slate-500 uppercase tracking-wider">
             <div className="col-span-6 pl-4">Features</div>
-            <div className="col-span-3 text-center">Guest</div>
+            <div className="col-span-3 text-center">Free</div>
             <div className="col-span-3 text-center text-primary-700">Covenant</div>
           </div>
 
@@ -199,9 +199,9 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
                     {item.name.includes("Background") && <Shield className="w-4 h-4 text-primary-500 hidden md:block" />}
                   </div>
                   
-                  {/* Guest Value */}
+                  {/* Guest/Free Value */}
                   <div className="col-span-3 flex md:justify-center items-center gap-2 md:gap-0">
-                    <span className="md:hidden text-xs text-slate-500 font-bold w-20">Guest:</span>
+                    <span className="md:hidden text-xs text-slate-500 font-bold w-20">Free:</span>
                     {item.guest === true ? (
                       <Check className="w-5 h-5 text-slate-400" />
                     ) : item.guest === false ? (
