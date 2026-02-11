@@ -1,5 +1,18 @@
 import React from 'react';
 
+export type PageView = 
+  | 'home' 
+  | 'about' 
+  | 'careers' 
+  | 'press' 
+  | 'contact' 
+  | 'privacy' 
+  | 'terms' 
+  | 'cookies' 
+  | 'safety' 
+  | 'pricing' 
+  | 'how-it-works';
+
 export interface Testimonial {
   id: number;
   name: string;
@@ -17,6 +30,8 @@ export interface Feature {
 
 export interface BioRequest {
   name: string;
+  age: string;
+  faith: string;
   hobbies: string;
   values: string;
   lookingFor: string;

@@ -1,20 +1,34 @@
 import React, { useState } from 'react';
 import { Heart, Menu, X } from 'lucide-react';
+import { PageView } from '../types';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onNavigate: (page: PageView) => void;
+  currentPage: PageView;
+}
+
+const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const handleNav = (page: PageView) => {
+    onNavigate(page);
+    setIsMenuOpen(false);
+  };
+
+  const navItemClass = (page: PageView) => 
+    `text-base font-medium transition-colors cursor-pointer ${currentPage === page ? 'text-primary-600' : 'text-slate-500 hover:text-slate-900'}`;
+
   return (
-    <header className="fixed w-full bg-white/90 backdrop-blur-md z-50 border-b border-slate-100">
+    <header className="fixed w-full bg-white/95 backdrop-blur-md z-50 border-b border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
-            <a href="#" className="flex items-center gap-2 group">
+            <button onClick={() => handleNav('home')} className="flex items-center gap-2 group">
               <div className="bg-primary-50 p-2 rounded-full group-hover:bg-primary-100 transition-colors">
                  <Heart className="h-6 w-6 text-primary-600 fill-current" />
               </div>
               <span className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Virgins</span>
-            </a>
+            </button>
           </div>
           
           <div className="-mr-2 -my-2 md:hidden">
@@ -29,15 +43,10 @@ const Header: React.FC = () => {
           </div>
 
           <nav className="hidden md:flex space-x-10">
-            <a href="#features" className="text-base font-medium text-slate-500 hover:text-slate-900 transition-colors">
-              Our Values
-            </a>
-            <a href="#stories" className="text-base font-medium text-slate-500 hover:text-slate-900 transition-colors">
-              Success Stories
-            </a>
-            <a href="#bio-helper" className="text-base font-medium text-slate-500 hover:text-slate-900 transition-colors">
-              AI Profile Helper
-            </a>
+            <button onClick={() => handleNav('home')} className={navItemClass('home')}>Home</button>
+            <button onClick={() => handleNav('how-it-works')} className={navItemClass('how-it-works')}>How It Works</button>
+            <button onClick={() => handleNav('pricing')} className={navItemClass('pricing')}>Pricing</button>
+            <button onClick={() => handleNav('about')} className={navItemClass('about')}>About Us</button>
           </nav>
           
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
@@ -71,22 +80,20 @@ const Header: React.FC = () => {
               </div>
               <div className="mt-6">
                 <nav className="grid gap-y-8">
-                  <a href="#features" className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
-                    <span className="ml-3 text-base font-medium text-slate-900">Our Values</span>
-                  </a>
-                  <a href="#stories" className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
-                    <span className="ml-3 text-base font-medium text-slate-900">Success Stories</span>
-                  </a>
-                  <a href="#bio-helper" className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
-                    <span className="ml-3 text-base font-medium text-slate-900">AI Profile Helper</span>
-                  </a>
+                  <button onClick={() => handleNav('home')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
+                    <span className="ml-3 text-base font-medium text-slate-900">Home</span>
+                  </button>
+                  <button onClick={() => handleNav('how-it-works')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
+                    <span className="ml-3 text-base font-medium text-slate-900">How It Works</span>
+                  </button>
+                  <button onClick={() => handleNav('pricing')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
+                    <span className="ml-3 text-base font-medium text-slate-900">Pricing</span>
+                  </button>
+                  <button onClick={() => handleNav('about')} className="-m-3 p-3 flex items-center rounded-md hover:bg-slate-50">
+                    <span className="ml-3 text-base font-medium text-slate-900">About Us</span>
+                  </button>
                 </nav>
               </div>
-            </div>
-            <div className="py-6 px-5 space-y-6">
-              <a href="#download" className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary-600 hover:bg-primary-700">
-                Download App
-              </a>
             </div>
           </div>
         </div>

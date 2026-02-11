@@ -7,9 +7,10 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const generateProfileBio = async (data: BioRequest): Promise<GeminiResponse> => {
   try {
     const prompt = `
-      Create a dating profile bio for a user named ${data.name}.
+      Create a dating profile bio for a user named ${data.name}, age ${data.age}.
       
       User Details:
+      - Faith/Denomination: ${data.faith}
       - Hobbies: ${data.hobbies}
       - Core Values: ${data.values}
       - Looking for: ${data.lookingFor}
@@ -18,9 +19,10 @@ export const generateProfileBio = async (data: BioRequest): Promise<GeminiRespon
       
       Requirements:
       1. The tone should be respectful, wholesome, marriage-minded, and elegant.
-      2. Emphasize their commitment to waiting for marriage in a confident but humble way.
-      3. Avoid slang or casual hookup culture language.
-      4. Provide a short piece of dating advice for them as well.
+      2. Emphasize their commitment to traditional values and waiting for marriage.
+      3. If a faith is provided, subtly weave it into the narrative of their life and dating approach.
+      4. Avoid slang, casual hookup language, or superficiality.
+      5. Provide a short, encouraging piece of relationship advice specific to their situation.
     `;
 
     const response = await ai.models.generateContent({
@@ -42,7 +44,7 @@ export const generateProfileBio = async (data: BioRequest): Promise<GeminiRespon
           },
           required: ["bio", "advice"],
         },
-        systemInstruction: "You are a professional relationship coach specializing in traditional courtship and marriage-minded dating. You help people articulate their values clearly and respectfully.",
+        systemInstruction: "You are a professional relationship coach specializing in traditional courtship and marriage-minded dating. You help people articulate their high standards and values clearly and respectfully.",
       },
     });
 
