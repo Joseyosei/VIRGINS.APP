@@ -73,6 +73,13 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
              >
                Admin
              </button>
+             <button 
+               onClick={() => onNavigate('profile')}
+               className="text-xs text-navy-800 hover:text-navy-700 transition-colors"
+               title="Member Profile"
+             >
+               Profile
+             </button>
           </div>
         </div>
       </div>

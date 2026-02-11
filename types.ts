@@ -14,7 +14,8 @@ export type PageView =
   | 'safety' 
   | 'pricing' 
   | 'how-it-works'
-  | 'admin';
+  | 'admin'
+  | 'profile';
 
 export interface Testimonial {
   id: number;

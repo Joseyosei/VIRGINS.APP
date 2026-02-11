@@ -13,6 +13,7 @@ import Footer from './components/Footer';
 import WaitlistPage from './components/WaitlistPage';
 import MatchmakerDemo from './components/MatchmakerDemo';
 import AdminDashboard from './components/AdminDashboard';
+import UserProfile from './components/UserProfile';
 
 // Pages
 import { HowItWorks, Pricing } from './components/ProductPages';
@@ -40,6 +41,8 @@ const App: React.FC = () => {
         return <MatchmakerDemo />;
       case 'admin':
         return <AdminDashboard />;
+      case 'profile':
+        return <UserProfile onNavigate={setCurrentPage} />;
       case 'how-it-works':
         return <HowItWorks onNavigate={setCurrentPage} />;
       case 'pricing':
@@ -70,7 +73,7 @@ const App: React.FC = () => {
       <Header onNavigate={setCurrentPage} currentPage={currentPage} />
       {renderPage()}
       {/* Hide footer on waitlist/admin page for cleaner look. */}
-      {currentPage !== 'waitlist' && currentPage !== 'admin' && <Footer onNavigate={setCurrentPage} />}
+      {currentPage !== 'waitlist' && currentPage !== 'admin' && currentPage !== 'profile' && <Footer onNavigate={setCurrentPage} />}
     </div>
   );
 };
