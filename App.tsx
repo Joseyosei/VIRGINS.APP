@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { PageView } from './types';
 
@@ -39,6 +40,8 @@ const App: React.FC = () => {
   const handleSplashComplete = () => {
     sessionStorage.setItem('virgins_splash_seen', 'true');
     setShowSplash(false);
+    // Direct user to login immediately after splash as requested
+    setCurrentPage('login');
   };
 
   const renderPage = () => {

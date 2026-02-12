@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Mail, User, Lock, Loader2, ArrowRight, CheckCircle } from 'lucide-react';
+import { Mail, User, Lock, Loader2, ArrowRight, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { PageView } from '../types';
 
 interface SignupPageProps {
@@ -8,6 +9,7 @@ interface SignupPageProps {
 
 const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -109,13 +111,20 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
                   <Lock className="h-5 w-5 text-slate-400" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  className="block w-full pl-12 pr-4 py-4 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none transition-all"
+                  className="block w-full pl-12 pr-12 py-4 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none transition-all"
                   placeholder="Min. 8 characters"
                   value={formData.password}
                   onChange={e => setFormData({ ...formData, password: e.target.value })}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-navy-900 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
