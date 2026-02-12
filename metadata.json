@@ -1,5 +1,7 @@
 {
   "name": "Virgins - Traditional Dating",
   "description": "A premium dating platform connecting individuals with traditional values who are saving intimacy for marriage.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

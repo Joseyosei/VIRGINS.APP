@@ -1,5 +1,6 @@
-import React from 'react';
-import { Check, X, Shield, Heart, Zap, UserPlus, Lock, Crown } from 'lucide-react';
+
+import React, { useState } from 'react';
+import { Check, X, Shield, Heart, Zap, UserPlus, Lock, Crown, Loader2 } from 'lucide-react';
 import { PageView } from '../types';
 
 interface PageProps {
@@ -81,6 +82,22 @@ export const HowItWorks: React.FC<PageProps> = ({ onNavigate }) => {
 };
 
 export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [currentTier, setCurrentTier] = useState<string>('free');
+
+  const handleSelectPlan = (plan: string) => {
+    setLoading(plan);
+    setTimeout(() => {
+      setLoading(null);
+      setCurrentTier(plan);
+      if (plan === 'free') onNavigate('signup');
+      else {
+        alert(`Thank you for investing in your legacy with the ${plan} plan!`);
+        onNavigate('matchmaker');
+      }
+    }, 1500);
+  };
+
   const features = [
     {
       category: "Core Experience",
@@ -134,10 +151,8 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
           </p>
         </div>
 
-        {/* Pricing Cards Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-          {/* Free Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+          <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center transition-all ${currentTier === 'free' ? 'ring-2 ring-navy-900' : ''}`}>
             <h3 className="text-xl font-medium text-slate-900 font-serif">Free</h3>
             <p className="mt-4 flex items-baseline justify-center text-slate-900">
               <span className="text-4xl font-extrabold tracking-tight">$0</span>
@@ -145,15 +160,15 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
             </p>
             <p className="mt-4 text-sm text-slate-500">Get a feel for the community.</p>
             <button 
-              onClick={() => onNavigate('waitlist')}
-              className="mt-6 w-full bg-slate-100 border border-transparent rounded-full py-3 px-6 text-center font-medium text-slate-900 hover:bg-slate-200"
+              onClick={() => handleSelectPlan('free')}
+              disabled={loading === 'free'}
+              className="mt-6 w-full bg-slate-100 border border-transparent rounded-full py-3 px-6 text-center font-bold text-slate-900 hover:bg-slate-200 transition-all flex items-center justify-center"
             >
-              Join for Free
+              {loading === 'free' ? <Loader2 className="animate-spin" /> : 'Join for Free'}
             </button>
           </div>
 
-          {/* Covenant Card */}
-          <div className="bg-navy-900 rounded-2xl shadow-xl border-2 border-gold-500 p-8 text-center relative transform md:-translate-y-4">
+          <div className={`bg-navy-900 rounded-2xl shadow-xl border-2 border-gold-500 p-8 text-center relative transform md:-translate-y-4 transition-all ${currentTier === 'covenant' ? 'ring-4 ring-gold-400' : ''}`}>
             <div className="absolute top-0 right-0 left-0 -mt-4 flex justify-center">
               <span className="bg-gold-500 text-navy-900 text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wide flex items-center gap-1 shadow-md">
                 <Crown className="w-3 h-3" /> Most Popular
@@ -166,15 +181,15 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
             </p>
             <p className="mt-4 text-sm text-slate-300">For serious dating & marriage.</p>
             <button 
-              onClick={() => onNavigate('waitlist')}
-              className="mt-6 w-full bg-gradient-to-r from-gold-500 to-gold-600 border border-transparent rounded-full py-3 px-6 text-center font-bold text-navy-900 hover:bg-gold-400 shadow-lg shadow-gold-500/20"
+              onClick={() => handleSelectPlan('covenant')}
+              disabled={loading === 'covenant'}
+              className="mt-6 w-full bg-gradient-to-r from-gold-500 to-gold-600 border border-transparent rounded-full py-3 px-6 text-center font-bold text-navy-900 hover:bg-gold-400 shadow-lg shadow-gold-500/20 transition-all flex items-center justify-center"
             >
-              Get Covenant
+              {loading === 'covenant' ? <Loader2 className="animate-spin" /> : 'Get Covenant'}
             </button>
           </div>
         </div>
 
-        {/* Comparison Table */}
         <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden">
           <div className="hidden md:grid grid-cols-12 bg-slate-50 border-b border-slate-200 p-4 text-sm font-bold text-slate-500 uppercase tracking-wider">
             <div className="col-span-6 pl-4">Features</div>
@@ -199,19 +214,17 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
                     {item.name.includes("Background") && <Shield className="w-4 h-4 text-primary-500 hidden md:block" />}
                   </div>
                   
-                  {/* Guest/Free Value */}
                   <div className="col-span-3 flex md:justify-center items-center gap-2 md:gap-0">
                     <span className="md:hidden text-xs text-slate-500 font-bold w-20">Free:</span>
                     {item.guest === true ? (
                       <Check className="w-5 h-5 text-slate-400" />
                     ) : item.guest === false ? (
-                      <div className="w-4 h-px bg-slate-300"></div> // Dash for "No"
+                      <div className="w-4 h-px bg-slate-300"></div> 
                     ) : (
                       <span className="text-sm text-slate-500 font-medium">{item.guest}</span>
                     )}
                   </div>
 
-                  {/* Covenant Value */}
                   <div className="col-span-3 flex md:justify-center items-center gap-2 md:gap-0 mt-2 md:mt-0">
                     <span className="md:hidden text-xs text-primary-700 font-bold w-20">Covenant:</span>
                     {item.covenant === true ? (
@@ -226,12 +239,6 @@ export const Pricing: React.FC<PageProps> = ({ onNavigate }) => {
               ))}
             </div>
           ))}
-        </div>
-
-        <div className="mt-12 text-center">
-           <p className="text-slate-500 text-sm max-w-2xl mx-auto">
-             * Background checks are processed via a third-party secure provider. Verification badges are subject to manual review approval. Prices are in USD and may vary by region.
-           </p>
         </div>
       </div>
     </div>

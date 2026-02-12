@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { BioRequest, GeminiResponse } from '../types';
 
@@ -58,5 +59,35 @@ export const generateProfileBio = async (data: BioRequest): Promise<GeminiRespon
   } catch (error) {
     console.error("Error generating bio:", error);
     throw new Error("Failed to generate bio. Please try again.");
+  }
+};
+
+export const getGroundedDateSpots = async (lat: number, lng: number, category: string) => {
+  try {
+    const prompt = `Find 3 wholesome, highly-rated, and safe public venues for a first date in the ${category} category near my current location. Focus on places suitable for a traditional first meeting (good conversation, safe environment).`;
+    
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        tools: [{ googleMaps: {} }],
+        toolConfig: {
+          retrievalConfig: {
+            latLng: {
+              latitude: lat,
+              longitude: lng
+            }
+          }
+        }
+      },
+    });
+
+    return {
+      text: response.text,
+      places: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
+    };
+  } catch (error) {
+    console.error("Error fetching date spots:", error);
+    return null;
   }
 };
