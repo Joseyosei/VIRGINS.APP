@@ -7,21 +7,21 @@ const testimonials: Testimonial[] = [
     name: 'Rebecca & Thomas',
     role: 'Married 2 years',
     quote: "We were both tired of the modern dating scene. Finding Virgins was a breath of fresh air. knowing we shared the same boundaries from day one made everything easier.",
-    image: 'https://picsum.photos/200/200?random=1',
+    image: 'https://images.unsplash.com/photo-1621626245367-97d8c52bd85d?auto=format&fit=crop&w=200&h=200&q=80',
   },
   {
     id: 2,
     name: 'Emily & David',
     role: 'Engaged',
     quote: "I never thought I'd find someone who respected my choice to wait. This app didn't just find me a date; it found me my future husband.",
-    image: 'https://picsum.photos/200/200?random=2',
+    image: 'https://images.unsplash.com/photo-1529634597503-139d372668c4?auto=format&fit=crop&w=200&h=200&q=80',
   },
   {
     id: 3,
     name: 'Michael',
     role: 'Member since 2023',
     quote: "The community here is different. It's respectful, serious, and intentional. Highly recommend for anyone serious about marriage.",
-    image: 'https://picsum.photos/200/200?random=3',
+    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&h=200&q=80',
   },
 ];
 

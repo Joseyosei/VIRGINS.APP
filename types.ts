@@ -4,6 +4,8 @@ export type PageView =
   | 'home' 
   | 'waitlist'
   | 'matchmaker'
+  | 'nearby'
+  | 'date-planner'
   | 'about' 
   | 'careers' 
   | 'press' 
@@ -15,7 +17,9 @@ export type PageView =
   | 'pricing' 
   | 'how-it-works'
   | 'admin'
-  | 'profile';
+  | 'profile'
+  | 'login'
+  | 'signup';
 
 export interface Testimonial {
   id: number;
@@ -101,4 +105,15 @@ export interface MatchResult {
     lifestyleScore: number;
   };
   reasons: string[];
+}
+
+export interface PlannedDate {
+  id: string;
+  partnerName: string;
+  partnerImage: string;
+  date: string;
+  time: string;
+  venue: string;
+  status: 'pending' | 'confirmed' | 'completed';
+  type: string;
 }

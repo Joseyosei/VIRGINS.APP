@@ -8,9 +8,16 @@ interface HeroProps {
 
 const LOCATIONS = ['Austin, TX', 'Dallas, TX', 'Houston, TX', 'Nashville, TN', 'Charlotte, NC', 'Atlanta, GA', 'Denver, CO', 'Miami, FL', 'Chicago, IL'];
 
+const AVATARS = [
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100&q=80",
+  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&h=100&q=80",
+  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=100&h=100&q=80",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80",
+  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=100&h=100&q=80"
+];
+
 const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   const [email, setEmail] = useState('');
-  const [step, setStep] = useState<'input' | 'verify' | 'success'>('input');
   const [loading, setLoading] = useState(false);
   const [recentJoin, setRecentJoin] = useState<{city: string, time: number} | null>(null);
   
@@ -67,29 +74,14 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
     e.preventDefault();
     if (email) {
       setLoading(true);
+      // Store email temporarily to pre-fill waitlist
+      sessionStorage.setItem('virgins_temp_email', email);
       
-      // Simulate network request to backend to send email
       setTimeout(() => {
-        setStep('verify');
         setLoading(false);
-        console.log(`[Simulation] Verification email sent to: ${email}`);
-      }, 1500);
+        onNavigate('waitlist');
+      }, 800);
     }
-  };
-
-  const handleVerify = () => {
-    setLoading(true);
-    // Simulate verifying the token from the email link
-    setTimeout(() => {
-      setStep('success');
-      // Increment user count only after successful verification
-      setUserCount(prev => prev + 1);
-      setLoading(false);
-      
-      // Auto-navigate to waitlist details page after short delay? 
-      // Or let them stay here. The prompt asks for waitlist page for full details.
-      // We'll keep them here as it's a quick capture.
-    }, 1500);
   };
 
   return (
@@ -130,9 +122,8 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           Connect with a verified community that honors tradition. We are the platform for those saving intimacy for marriage and building a legacy.
         </p>
         
-        {/* High Conversion Email Capture with Verification Flow */}
-        <div className="max-w-md mx-auto mb-12 min-h-[140px]">
-          {step === 'input' && (
+        {/* Email Capture */}
+        <div className="max-w-md mx-auto mb-12 min-h-[100px]">
             <form onSubmit={handleSignup} className="flex flex-col sm:flex-row gap-3 animate-fadeIn">
               <div className="relative flex-grow">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -156,57 +147,6 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Join Now'}
               </button>
             </form>
-          )}
-
-          {step === 'verify' && (
-            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-lg animate-fadeIn text-left">
-              <div className="flex items-start mb-4">
-                <div className="bg-blue-50 p-3 rounded-full mr-4">
-                  <Inbox className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">Verify your email</h3>
-                  <p className="text-sm text-slate-600 mt-1">
-                    We've sent a unique verification link to <span className="font-bold text-slate-900">{email}</span>. 
-                    Please click the link to activate your profile.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 mb-2">
-                 <p className="text-xs text-slate-400 uppercase tracking-wide font-bold mb-2">Simulated Email Inbox</p>
-                 <button 
-                    onClick={handleVerify}
-                    disabled={loading}
-                    className="w-full flex items-center justify-between bg-white border border-slate-200 p-3 rounded-lg shadow-sm hover:border-primary-300 hover:shadow-md transition-all group"
-                 >
-                    <span className="text-sm font-medium text-slate-700">Verify Email Address</span>
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin text-primary-600" /> : <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-primary-600" />}
-                 </button>
-              </div>
-              <button onClick={() => setStep('input')} className="text-xs text-slate-400 hover:text-primary-600 underline w-full text-center mt-2">
-                Use a different email
-              </button>
-            </div>
-          )}
-
-          {step === 'success' && (
-            <div className="flex flex-col items-center justify-center animate-fadeIn bg-green-50 rounded-2xl p-6 border border-green-100 shadow-sm">
-              <div className="flex items-center text-green-700 font-bold text-lg mb-2">
-                <CheckCircle className="w-6 h-6 mr-2" />
-                <span>Email Verified!</span>
-              </div>
-              <p className="text-green-600 text-sm mb-4">
-                Your account has been created. Complete your profile to move up the waitlist.
-              </p>
-              <button 
-                onClick={() => onNavigate('waitlist')}
-                className="text-sm font-bold text-primary-600 hover:text-primary-700 underline"
-              >
-                Complete Profile &rarr;
-              </button>
-            </div>
-          )}
           
           {/* Real-time Counter with Pulse */}
           <div className="mt-4 flex items-center justify-center space-x-3 text-sm text-slate-500">
@@ -222,8 +162,8 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
         <div className="mt-12 flex flex-col items-center justify-center gap-4 text-sm text-slate-500">
           <div className="flex -space-x-3">
-             {[1,2,3,4,5].map(i => (
-                <img key={i} className="inline-block h-10 w-10 rounded-full ring-4 ring-slate-50 object-cover" src={`https://picsum.photos/100/100?random=${20+i}`} alt="Member"/>
+             {AVATARS.map((src, i) => (
+                <img key={i} className="inline-block h-10 w-10 rounded-full ring-4 ring-slate-50 object-cover" src={src} alt="Member"/>
              ))}
              <div className="h-10 w-10 rounded-full ring-4 ring-slate-50 bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
                 {(Math.floor(userCount / 1000))}k+

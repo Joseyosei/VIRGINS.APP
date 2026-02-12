@@ -1,6 +1,13 @@
 import React from 'react';
 
 const DownloadSection: React.FC = () => {
+  const mockUsers = [
+    { img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80", name: "w-20", msg: "w-32" },
+    { img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", name: "w-16", msg: "w-24" },
+    { img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80", name: "w-24", msg: "w-28" },
+    { img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=100&q=80", name: "w-20", msg: "w-36" },
+  ];
+
   return (
     <div id="download" className="bg-navy-900 py-24 overflow-hidden relative">
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
@@ -21,12 +28,12 @@ const DownloadSection: React.FC = () => {
                      <div className="w-24 h-3 bg-slate-200 rounded"></div>
                   </div>
                   <div className="p-4 space-y-3">
-                     {[1,2,3,4].map(i => (
+                     {mockUsers.map((u, i) => (
                         <div key={i} className="flex items-center p-3 bg-white rounded-xl shadow-sm border border-slate-100">
-                           <div className="w-10 h-10 rounded-full bg-primary-100 flex-shrink-0"></div>
+                           <img src={u.img} className="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="User" />
                            <div className="ml-3 space-y-1 w-full">
-                              <div className="w-20 h-2 bg-slate-200 rounded"></div>
-                              <div className="w-32 h-2 bg-slate-100 rounded"></div>
+                              <div className={`${u.name} h-2 bg-slate-200 rounded`}></div>
+                              <div className={`${u.msg} h-2 bg-slate-100 rounded`}></div>
                            </div>
                         </div>
                      ))}

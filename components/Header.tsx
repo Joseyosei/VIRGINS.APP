@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowRight, MapPin, Calendar, Gem, User, CheckCircle, Compass, Sparkles } from 'lucide-react';
 import { PageView } from '../types';
 
 interface HeaderProps {
@@ -10,8 +10,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [beans] = useState(250); 
 
-  // Add scroll effect for "modern" feel
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -26,13 +26,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   };
 
   const navItemClass = (page: PageView) => 
-    `text-sm font-medium transition-all duration-200 cursor-pointer px-4 py-2 rounded-full hover:bg-slate-50 ${
+    `group flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-500 ${
       currentPage === page 
-        ? 'text-navy-900 font-semibold bg-slate-50' 
-        : 'text-slate-500 hover:text-navy-900'
+        ? 'bg-navy-900 text-gold-500 shadow-[0_0_20px_rgba(212,165,116,0.3)] scale-105' 
+        : 'text-slate-600 hover:text-navy-900 hover:bg-slate-100/80'
     }`;
 
-  // Custom Logo Component
   const RingsLogo = ({ className }: { className?: string }) => (
     <svg viewBox="0 0 100 80" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="35" cy="45" r="22" stroke="#D4A574" strokeWidth="5" />
@@ -42,98 +41,126 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   );
 
   return (
-    <header 
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled 
-          ? 'bg-white/90 backdrop-blur-xl shadow-sm py-3 border-b border-slate-100' 
-          : 'bg-transparent py-6'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
+    <header className="fixed w-full z-50 transition-all duration-700 px-4 pt-6">
+      <div className={`max-w-7xl mx-auto transition-all duration-700 ${scrolled ? 'translate-y-[-8px]' : ''}`}>
+        <div className={`flex justify-between items-center px-6 py-3.5 rounded-[2.5rem] border transition-all duration-700 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.15)] ${
+          scrolled 
+            ? 'bg-white/90 backdrop-blur-2xl border-white/20' 
+            : 'bg-white/60 backdrop-blur-md border-white/40'
+        }`}>
           
           {/* Logo Section */}
-          <div className="flex justify-start lg:w-0 lg:flex-1">
+          <div className="flex items-center">
             <button onClick={() => handleNav('home')} className="flex items-center gap-3 group">
-              <div className="transition-transform duration-300 group-hover:scale-110">
-                 <RingsLogo className="h-9 w-auto" />
+              <div className="relative">
+                <RingsLogo className="h-10 w-auto group-hover:rotate-[360deg] transition-transform duration-1000 ease-in-out" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gold-500 rounded-full border-2 border-white animate-pulse"></div>
               </div>
-              <span className="text-2xl font-serif font-bold tracking-widest uppercase text-navy-900">
+              <span className="hidden md:block text-2xl font-serif font-black tracking-widest uppercase text-navy-900">
                 Virgins
               </span>
             </button>
           </div>
-          
-          {/* Mobile Menu Button */}
-          <div className="-mr-2 -my-2 md:hidden">
-            <button
-              type="button"
-              className="bg-white/50 backdrop-blur rounded-full p-2 inline-flex items-center justify-center text-slate-600 hover:text-navy-900 hover:bg-slate-100 focus:outline-none transition-colors"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              <span className="sr-only">Open menu</span>
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
 
-          {/* Desktop Navigation - Centered & Floating Pill */}
-          <nav className="hidden md:flex space-x-2 items-center bg-white/70 px-6 py-2 rounded-full backdrop-blur-md border border-white/20 shadow-sm ring-1 ring-slate-900/5">
-            <button onClick={() => handleNav('home')} className={navItemClass('home')}>Home</button>
-            <button onClick={() => handleNav('how-it-works')} className={navItemClass('how-it-works')}>How It Works</button>
-            <button onClick={() => handleNav('pricing')} className={navItemClass('pricing')}>Pricing</button>
+          {/* Desktop Navigation - Elite Pill Design */}
+          <nav className="hidden lg:flex items-center bg-slate-400/10 p-1 rounded-full border border-white/30 backdrop-blur-2xl">
+            <button onClick={() => handleNav('matchmaker')} className={navItemClass('matchmaker')}>
+              <Compass size={16} className={currentPage === 'matchmaker' ? 'animate-spin-slow' : ''} /> Discover
+            </button>
+            <button onClick={() => handleNav('nearby')} className={navItemClass('nearby')}>
+              <MapPin size={16} /> Nearby
+            </button>
+            <button onClick={() => handleNav('date-planner')} className={navItemClass('date-planner')}>
+              <Calendar size={16} /> Plan Date
+            </button>
+            <div className="w-px h-5 bg-slate-300/50 mx-2" />
+            <button onClick={() => handleNav('pricing')} className={navItemClass('pricing')}>
+              <Gem size={14} /> Membership
+            </button>
           </nav>
           
-          {/* CTA Button */}
-          <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
+          {/* Actions & Premium Status */}
+          <div className="flex items-center gap-2 md:gap-5">
             <button 
-              onClick={() => handleNav('waitlist')}
-              className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full shadow-lg text-sm font-bold text-white bg-navy-900 hover:bg-navy-800 transition-all hover:-translate-y-0.5 hover:shadow-xl ring-2 ring-transparent hover:ring-gold-400"
+              onClick={() => handleNav('profile')}
+              className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-gold-50 to-white px-5 py-2.5 rounded-full text-gold-700 font-bold text-xs border border-gold-200/50 hover:border-gold-400 transition-all shadow-sm active:scale-95"
             >
-              Join Waitlist
+              <Sparkles size={14} className="text-gold-500" />
+              <span className="tabular-nums">{beans}</span>
+              <span className="opacity-40 uppercase tracking-tighter">Beans</span>
             </button>
+
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => handleNav('login')}
+                className="hidden sm:block text-sm font-bold text-slate-500 hover:text-navy-900 px-3 transition-colors"
+              >
+                Sign In
+              </button>
+              <button 
+                onClick={() => handleNav('signup')}
+                className="group relative overflow-hidden px-7 py-3 rounded-full shadow-2xl transition-all hover:scale-105 hover:-translate-y-0.5 active:scale-95"
+              >
+                <div className="absolute inset-0 bg-navy-900 transition-colors group-hover:bg-navy-800"></div>
+                <span className="relative z-10 text-sm font-bold text-white tracking-wide">Get Started</span>
+              </button>
+              
+              {/* Mobile Menu Toggle */}
+              <button
+                type="button"
+                className="lg:hidden p-2.5 rounded-full bg-navy-900 text-gold-500 shadow-xl"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu - Ultra Modern Overlay */}
       {isMenuOpen && (
-        <div className="absolute top-0 inset-x-0 p-2 transition transform origin-top-right md:hidden">
-          <div className="rounded-2xl shadow-2xl ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50">
-            <div className="pt-5 pb-6 px-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                   <RingsLogo className="h-8 w-auto" />
-                   <span className="text-xl font-serif font-bold text-navy-900 tracking-widest uppercase">Virgins</span>
+        <div className="fixed inset-0 z-50 bg-navy-900/95 backdrop-blur-3xl lg:hidden p-8 flex flex-col animate-fadeIn">
+          <div className="flex justify-between items-center mb-16">
+             <div className="flex items-center gap-3">
+               <RingsLogo className="h-10 w-auto" />
+               <span className="text-3xl font-serif font-black text-white tracking-widest uppercase">Virgins</span>
+             </div>
+             <button onClick={() => setIsMenuOpen(false)} className="p-4 rounded-full bg-white/5 text-white hover:bg-white/10 transition-colors">
+               <X size={32} />
+             </button>
+          </div>
+          
+          <nav className="flex flex-col gap-8 flex-1">
+            {[
+              { id: 'matchmaker', label: 'Discover Feed', icon: <Compass size={28}/> },
+              { id: 'nearby', label: 'Nearby Members', icon: <MapPin size={28}/> },
+              { id: 'date-planner', label: 'Plan a Date', icon: <Calendar size={28}/> },
+              { id: 'pricing', label: 'Membership', icon: <Gem size={28}/> },
+              { id: 'profile', label: 'My Profile', icon: <User size={28}/> },
+            ].map((item) => (
+              <button 
+                key={item.id}
+                onClick={() => handleNav(item.id as PageView)}
+                className="flex items-center gap-6 group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gold-500 group-hover:bg-gold-500 group-hover:text-navy-900 transition-all">
+                  {item.icon}
                 </div>
-                <div className="-mr-2">
-                  <button
-                    type="button"
-                    className="bg-white rounded-md p-2 inline-flex items-center justify-center text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span className="sr-only">Close menu</span>
-                    <X className="h-6 w-6" />
-                  </button>
-                </div>
-              </div>
-              <div className="mt-6">
-                <nav className="grid gap-y-4">
-                  <button onClick={() => handleNav('home')} className="p-3 flex items-center rounded-xl hover:bg-slate-50 transition-colors">
-                    <span className="ml-3 text-base font-medium text-slate-900">Home</span>
-                  </button>
-                  <button onClick={() => handleNav('how-it-works')} className="p-3 flex items-center rounded-xl hover:bg-slate-50 transition-colors">
-                    <span className="ml-3 text-base font-medium text-slate-900">How It Works</span>
-                  </button>
-                  <button onClick={() => handleNav('pricing')} className="p-3 flex items-center rounded-xl hover:bg-slate-50 transition-colors">
-                    <span className="ml-3 text-base font-medium text-slate-900">Pricing</span>
-                  </button>
-                  <button onClick={() => handleNav('waitlist')} className="mt-4 p-3 flex items-center rounded-xl bg-navy-50 hover:bg-navy-100 transition-colors group border border-navy-100">
-                    <span className="ml-3 text-base font-bold text-navy-900 group-hover:text-navy-700">Join Waitlist</span>
-                    <ArrowRight className="ml-auto w-5 h-5 text-navy-900" />
-                  </button>
-                </nav>
-              </div>
-            </div>
+                <span className="text-3xl font-serif font-bold text-slate-300 group-hover:text-gold-400 transition-colors">
+                  {item.label}
+                </span>
+              </button>
+            ))}
+          </nav>
+
+          <div className="pt-12 space-y-4">
+             <button onClick={() => handleNav('signup')} className="w-full py-5 bg-gold-500 text-navy-900 rounded-[1.5rem] font-black text-xl shadow-2xl active:scale-95 transition-transform">Create Account</button>
+             <button onClick={() => handleNav('login')} className="w-full py-5 border-2 border-white/10 text-white rounded-[1.5rem] font-bold text-xl hover:bg-white/5 transition-colors">Sign In</button>
+          </div>
+          
+          <div className="mt-12 text-center text-white/20 text-[10px] font-bold uppercase tracking-[0.4em]">
+            Love Worth Waiting For
           </div>
         </div>
       )}

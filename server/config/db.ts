@@ -9,7 +9,8 @@ const connectDB = async () => {
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error: any) {
     console.error(`Error: ${error.message}`);
-    process.exit(1);
+    // Fix: Cast process to any to access exit in environments where Node types are missing
+    (process as any).exit(1);
   }
 };
 

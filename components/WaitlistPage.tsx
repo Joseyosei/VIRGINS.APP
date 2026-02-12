@@ -1,40 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Mail, ArrowRight, CheckCircle, Loader2, Share2, Copy, MapPin, User, Heart, Calendar, BookOpen } from 'lucide-react';
-import { PageView, WaitlistUser } from '../types';
+import React, { useState, useEffect, useRef } from 'react';
+import { ShieldCheck, Mail, ArrowRight, CheckCircle, Loader2, Share2, Copy, MapPin, User, Heart, Calendar, BookOpen, Inbox, AlertCircle, Camera, X, Plus, Info, Compass } from 'lucide-react';
+import { PageView } from '../types';
 
 interface WaitlistPageProps {
   onNavigate: (page: PageView) => void;
 }
 
+const INTEREST_OPTIONS = ['Yoga', 'Baking', 'Travel', 'Hiking', 'Cooking', 'Reading', 'Faith', 'Family', 'Music', 'Fitness', 'Outdoors', 'Art', 'Tradition'];
+const LOOKING_FOR_OPTIONS = ['Long-term Relationship', 'Marriage', 'Friendship', 'Courtship'];
+
 const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1); // 1: Email, 2: Verify, 3: Details, 4: Success
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1); 
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // Additional Details
   const [details, setDetails] = useState({
     name: '',
     gender: '',
     age: '',
     faith: '',
-    city: ''
+    city: '',
+    lookingFor: [] as string[],
+    interests: [] as string[]
   });
 
-  // User Count Logic
-  const [userCount, setUserCount] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('virgins_user_count');
-      return saved ? parseInt(saved, 10) : 54896;
-    }
-    return 54896;
-  });
-
-  const [position, setPosition] = useState(userCount + 1);
+  const [photos, setPhotos] = useState<(string | null)[]>([null, null, null, null, null, null]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activePhotoSlot, setActivePhotoSlot] = useState<number | null>(null);
 
   useEffect(() => {
-    // Sync with local storage to keep the count realistic
-    localStorage.setItem('virgins_user_count', userCount.toString());
-  }, [userCount]);
+    const tempEmail = sessionStorage.getItem('virgins_temp_email');
+    if (tempEmail) {
+      setEmail(tempEmail);
+      sessionStorage.removeItem('virgins_temp_email');
+    }
+  }, []);
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,102 +44,135 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
     setTimeout(() => {
       setLoading(false);
       setStep(2);
-    }, 1000);
+    }, 600);
   };
 
-  const handleVerify = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setStep(3);
-    }, 1000);
-  };
-
-  const handleDetailsSubmit = (e: React.FormEvent) => {
+  const handleBasicsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setStep(3);
+  };
+
+  const togglePreference = (list: 'lookingFor' | 'interests', value: string) => {
+    setDetails(prev => {
+      const currentList = prev[list];
+      const newList = currentList.includes(value) 
+        ? currentList.filter(v => v !== value)
+        : [...currentList, value];
+      return { ...prev, [list]: newList };
+    });
+  };
+
+  const handlePhotoClick = (index: number) => {
+    if (photos[index]) {
+      const newPhotos = [...photos];
+      newPhotos[index] = null;
+      setPhotos(newPhotos);
+    } else {
+      setActivePhotoSlot(index);
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && activePhotoSlot !== null) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const newPhotos = [...photos];
+        newPhotos[activePhotoSlot] = reader.result as string;
+        setPhotos(newPhotos);
+        setActivePhotoSlot(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFinalSubmit = async () => {
     setLoading(true);
+    setError(null);
     
-    // SAVE USER DATA FOR ADMIN DASHBOARD
-    const newUser: WaitlistUser = {
-      id: crypto.randomUUID(),
-      email: email,
+    // Simulating database storage
+    const newUser = {
+      id: Math.random().toString(36).substr(2, 9),
+      email,
       name: details.name,
-      gender: details.gender,
-      age: details.age,
-      faith: details.faith,
-      city: details.city,
       joinedAt: new Date().toISOString(),
       status: 'verified'
     };
-
-    // Get existing users or empty array
-    const existingUsers = JSON.parse(localStorage.getItem('virgins_waitlist_data') || '[]');
-    // Add new user
-    localStorage.setItem('virgins_waitlist_data', JSON.stringify([newUser, ...existingUsers]));
+    
+    const existing = JSON.parse(localStorage.getItem('virgins_waitlist_data') || '[]');
+    localStorage.setItem('virgins_waitlist_data', JSON.stringify([...existing, newUser]));
 
     setTimeout(() => {
-      setUserCount(prev => prev + 1);
-      setPosition(userCount + 1);
       setLoading(false);
-      setStep(4);
+      setStep(5);
     }, 1500);
   };
 
-  const copyReferral = () => {
-    navigator.clipboard.writeText(`https://virgins.app/invite/${btoa(email).substring(0, 8)}`);
-    // Ideally show a toast here
-  };
+  const photoCount = photos.filter(p => p !== null).length;
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 pb-12 flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-30">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary-200 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-          <div className="absolute top-20 right-10 w-72 h-72 bg-gold-200 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
+    <div className="min-h-screen bg-white pt-24 pb-12 flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full">
+          <div className="absolute top-40 left-20 w-96 h-96 bg-gold-100 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-40 right-20 w-96 h-96 bg-primary-100 rounded-full blur-[100px]"></div>
         </div>
       </div>
 
-      <div className="w-full max-w-lg px-4 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-10">
-           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-md border border-slate-100 mb-6">
-              <ShieldCheck className="w-8 h-8 text-gold-500" />
-           </div>
-           <h1 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-2">
-             {step === 4 ? "You're on the list!" : "Join the Waitlist"}
+      <div className="w-full max-w-xl px-4 relative z-10">
+        {step < 5 && (
+          <div className="mb-8 max-w-xs mx-auto">
+             <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-navy-900 transition-all duration-500 ease-out"
+                  style={{ width: `${(step / 4) * 100}%` }}
+                ></div>
+             </div>
+             <div className="flex justify-between mt-2 px-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Step {step} of 4</span>
+                <span className="text-[10px] font-bold text-navy-900 uppercase tracking-widest">
+                  {step === 1 ? 'Email' : step === 2 ? 'Basics' : step === 3 ? 'Preferences' : 'Photos'}
+                </span>
+             </div>
+          </div>
+        )}
+
+        <div className="text-center mb-8">
+           <h1 className="text-3xl font-serif font-bold text-slate-900 mb-2">
+             {step === 5 ? "Registration Complete" : "Join Virgins"}
            </h1>
-           <p className="text-slate-500 text-lg">
-             {step === 4 ? "We'll let you know as soon as your spot opens up." : "Secure your spot for the most intentional dating community."}
+           <p className="text-slate-500">
+             {step === 5 ? `Welcome to the community, ${details.name}!` : "Courtship built on tradition and shared values."}
            </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
-          {/* Progress Bar (Hidden on Success) */}
-          {step < 4 && (
-            <div className="h-1.5 bg-slate-100 w-full">
-              <div 
-                className="h-full bg-gradient-to-r from-primary-500 to-gold-500 transition-all duration-500 ease-out"
-                style={{ width: `${(step / 3) * 100}%` }}
-              ></div>
-            </div>
-          )}
+        <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-50 overflow-hidden mb-12">
+          <div className="p-8 sm:p-10">
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 text-red-700">
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            )}
 
-          <div className="p-8">
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+
             {step === 1 && (
               <form onSubmit={handleEmailSubmit} className="space-y-6 animate-fadeIn">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-slate-400" />
-                    </div>
                     <input
                       type="email"
                       required
-                      className="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                      className="block w-full px-5 py-4 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white focus:border-transparent transition-all outline-none text-slate-900 font-medium"
                       placeholder="you@example.com"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
@@ -148,183 +182,202 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center py-4 px-6 border border-transparent rounded-xl shadow-sm text-lg font-bold text-white bg-navy-900 hover:bg-navy-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-900 transition-all"
+                  className="w-full flex items-center justify-center py-4 px-6 rounded-2xl shadow-lg text-lg font-bold text-white bg-navy-900 hover:bg-navy-800 transition-all hover:scale-[1.02] active:scale-95"
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Join Now'}
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Start My Journey'}
                 </button>
-                <p className="text-xs text-center text-slate-400 mt-4">
-                  By joining, you agree to our Terms of Service and Privacy Policy.
-                </p>
               </form>
             )}
 
             {step === 2 && (
-              <div className="animate-fadeIn text-center">
-                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Mail className="w-8 h-8 text-blue-500" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Verify your email</h3>
-                <p className="text-slate-500 mb-6 text-sm">
-                  We sent a secure link to <span className="font-semibold text-slate-900">{email}</span>.<br/>
-                  Please verify your email to proceed.
-                </p>
-                
-                {/* Simulated Inbox Action */}
-                <div className="bg-slate-50 border border-dashed border-slate-300 rounded-xl p-4 mb-6">
-                  <p className="text-xs uppercase font-bold text-slate-400 mb-2">Simulated Action</p>
-                  <button
-                    onClick={handleVerify}
-                    disabled={loading}
-                    className="w-full flex items-center justify-between bg-white border border-slate-200 hover:border-primary-400 p-3 rounded-lg shadow-sm group transition-all"
-                  >
-                    <span className="font-medium text-slate-700">Click to Verify</span>
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-primary-500" />}
-                  </button>
-                </div>
-                
-                <button onClick={() => setStep(1)} className="text-sm text-slate-400 underline hover:text-primary-600">
-                  Change email address
-                </button>
-              </div>
-            )}
-
-            {step === 3 && (
-              <form onSubmit={handleDetailsSubmit} className="space-y-4 animate-fadeIn">
-                <div className="text-center mb-6">
-                   <h3 className="text-lg font-bold text-slate-900">Almost there!</h3>
-                   <p className="text-sm text-slate-500">Help us customize your experience.</p>
-                </div>
-                
-                {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                  <div className="relative">
-                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-4 w-4 text-slate-400" />
-                     </div>
-                     <input
-                        type="text"
-                        required
-                        className="block w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="John Doe"
-                        value={details.name}
-                        onChange={e => setDetails({...details, name: e.target.value})}
-                     />
+              <form onSubmit={handleBasicsSubmit} className="space-y-5 animate-fadeIn">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Full Name</label>
+                    <input
+                      type="text" required
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
+                      placeholder="Your Name"
+                      value={details.name}
+                      onChange={e => setDetails({...details, name: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Age</label>
+                    <input
+                      type="number" required min="18"
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
+                      placeholder="21"
+                      value={details.age}
+                      onChange={e => setDetails({...details, age: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Gender</label>
+                    <select 
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none appearance-none"
+                      value={details.gender}
+                      onChange={e => setDetails({...details, gender: e.target.value})}
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="Man">Man</option>
+                      <option value="Woman">Woman</option>
+                    </select>
                   </div>
                 </div>
-
-                {/* Age */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
-                  <div className="relative">
-                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Calendar className="h-4 w-4 text-slate-400" />
-                     </div>
-                     <input
-                        type="number"
-                        required
-                        min="18"
-                        max="99"
-                        className="block w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="e.g. 25"
-                        value={details.age}
-                        onChange={e => setDetails({...details, age: e.target.value})}
-                     />
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Faith / Location</label>
+                  <div className="space-y-3">
+                    <input
+                      type="text" required
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
+                      placeholder="e.g. Catholic"
+                      value={details.faith}
+                      onChange={e => setDetails({...details, faith: e.target.value})}
+                    />
+                    <input
+                      type="text" required
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
+                      placeholder="e.g. London, UK"
+                      value={details.city}
+                      onChange={e => setDetails({...details, city: e.target.value})}
+                    />
                   </div>
                 </div>
-
-                {/* Gender */}
-                <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">I am a...</label>
-                   <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setDetails({...details, gender: 'Man'})}
-                        className={`py-2.5 px-4 rounded-lg border text-sm font-medium transition-all ${details.gender === 'Man' ? 'bg-primary-50 border-primary-500 text-primary-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}
-                      >
-                         Man
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDetails({...details, gender: 'Woman'})}
-                        className={`py-2.5 px-4 rounded-lg border text-sm font-medium transition-all ${details.gender === 'Woman' ? 'bg-primary-50 border-primary-500 text-primary-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}
-                      >
-                         Woman
-                      </button>
-                   </div>
-                </div>
-
-                {/* Faith */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Faith / Tradition</label>
-                  <div className="relative">
-                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <BookOpen className="h-4 w-4 text-slate-400" />
-                     </div>
-                     <input
-                        type="text"
-                        required
-                        className="block w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="e.g. Catholic, Baptist, Traditional"
-                        value={details.faith}
-                        onChange={e => setDetails({...details, faith: e.target.value})}
-                     />
-                  </div>
-                </div>
-
-                {/* City */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
-                  <div className="relative">
-                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <MapPin className="h-4 w-4 text-slate-400" />
-                     </div>
-                     <input
-                        type="text"
-                        className="block w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="e.g. Austin, TX"
-                        value={details.city}
-                        onChange={e => setDetails({...details, city: e.target.value})}
-                     />
-                  </div>
-                </div>
-
                 <button
                   type="submit"
-                  disabled={loading || !details.name || !details.gender || !details.age || !details.faith}
-                  className="w-full flex items-center justify-center py-3.5 px-6 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-navy-900 hover:bg-navy-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-900 transition-all mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full py-4 rounded-2xl text-white bg-navy-900 font-bold mt-4 shadow-lg active:scale-95 transition-transform"
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Complete Registration'}
+                  Continue
                 </button>
               </form>
             )}
 
-            {step === 4 && (
-              <div className="animate-fadeIn text-center">
-                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-green-50">
-                    <CheckCircle className="w-10 h-10 text-green-600" />
-                 </div>
-                 
-                 <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 mb-8">
-                    <p className="text-slate-500 text-sm uppercase tracking-wider font-bold mb-1">Your Position</p>
-                    <p className="text-4xl font-serif font-bold text-navy-900">#{position.toLocaleString()}</p>
-                    <p className="text-xs text-slate-400 mt-2">People ahead of you: {(position - 1).toLocaleString()}</p>
-                 </div>
+            {step === 3 && (
+              <div className="animate-fadeIn space-y-6">
+                <div>
+                   <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">I'm looking for</h3>
+                   <div className="flex flex-wrap gap-2">
+                      {LOOKING_FOR_OPTIONS.map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => togglePreference('lookingFor', opt)}
+                          className={`px-4 py-2.5 rounded-full text-sm font-medium border transition-all ${details.lookingFor.includes(opt) ? 'bg-navy-900 text-white border-navy-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                   </div>
+                </div>
 
+                <div>
+                   <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">I enjoy</h3>
+                   <div className="flex flex-wrap gap-2">
+                      {INTEREST_OPTIONS.map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => togglePreference('interests', opt)}
+                          className={`px-4 py-2.5 rounded-full text-sm font-medium border transition-all ${details.interests.includes(opt) ? 'bg-gold-500 text-white border-gold-500 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                   </div>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    onClick={() => setStep(4)}
+                    disabled={details.lookingFor.length === 0}
+                    className="w-full py-4 rounded-2xl text-white bg-navy-900 font-bold shadow-lg disabled:opacity-50"
+                  >
+                    Setup My Photos
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="animate-fadeIn space-y-6">
+                <div className="flex items-center justify-between">
+                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Profile Photos</h3>
+                   <div className="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-bold text-slate-500">
+                     {photoCount}/6
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {photos.map((photo, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handlePhotoClick(index)}
+                      className={`relative aspect-[3/4] rounded-2xl overflow-hidden border-2 transition-all flex flex-col items-center justify-center ${photo ? 'border-navy-900' : 'border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300'}`}
+                    >
+                      {photo ? (
+                        <>
+                          <img src={photo} className="w-full h-full object-cover" />
+                          <div className="absolute top-2 right-2 p-1 bg-black/50 backdrop-blur-md rounded-full text-white">
+                             <X size={12} />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="p-3 bg-white rounded-full shadow-sm mb-2">
+                             <Camera size={20} className="text-gold-500" />
+                          </div>
+                          <Plus size={16} className="text-slate-300 absolute bottom-3 right-3" />
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="p-4 bg-navy-50 rounded-2xl flex items-start gap-3">
+                   <Info className="w-5 h-5 text-navy-600 flex-shrink-0 mt-0.5" />
+                   <p className="text-xs text-navy-700 leading-relaxed font-medium">
+                     Traditional values prioritize authenticity. Clear, face-forward photos significantly increase your match rate for meaningful courtship.
+                   </p>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    onClick={handleFinalSubmit}
+                    disabled={loading || photoCount < 2}
+                    className="w-full py-4 rounded-2xl text-white bg-navy-900 font-bold shadow-lg disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    {loading ? <Loader2 className="animate-spin" /> : 'Complete Registration'}
+                  </button>
+                  <p className="text-center text-[10px] text-slate-400 mt-4 uppercase tracking-widest font-bold">Minimum 2 photos required</p>
+                </div>
+              </div>
+            )}
+
+            {step === 5 && (
+              <div className="animate-fadeIn text-center py-6">
+                 <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8 ring-8 ring-green-50/50">
+                    <CheckCircle className="w-10 h-10 text-green-500" />
+                 </div>
+                 <h3 className="text-2xl font-serif font-bold text-slate-900 mb-4">Registration Successful!</h3>
+                 <p className="text-slate-500 text-sm leading-relaxed mb-8 max-w-xs mx-auto">
+                   Your account is ready. You can now browse the community and find individuals who share your values.
+                 </p>
+                 
                  <div className="space-y-4">
-                    <p className="text-sm font-medium text-slate-700">Want to skip the line?</p>
+                    {/* Launch App Button */}
                     <button 
-                       onClick={copyReferral}
-                       className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 font-medium"
+                       onClick={() => onNavigate('matchmaker')}
+                       className="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-navy-900 rounded-2xl shadow-xl hover:bg-navy-800 transition-all transform hover:scale-105 text-white font-bold"
+                    >
+                       <Compass className="w-5 h-5" />
+                       <span>Launch Discover Feed</span>
+                    </button>
+                    
+                    <button 
+                       className="w-full flex items-center justify-center space-x-2 py-3.5 px-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors text-slate-700 font-bold"
                     >
                        <Share2 className="w-4 h-4" />
-                       <span>Copy Referral Link</span>
-                    </button>
-                 </div>
-                 
-                 <div className="mt-8 pt-8 border-t border-slate-100">
-                    <button onClick={() => onNavigate('home')} className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center justify-center gap-1">
-                       Back to Home <ArrowRight className="w-4 h-4" />
+                       <span>Invite Traditional Friends</span>
                     </button>
                  </div>
               </div>
@@ -332,9 +385,10 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-8 text-center">
-           <p className="text-slate-400 text-sm">&copy; {new Date().getFullYear()} Virgins Dating App. Love Worth Waiting For.</p>
+        <div className="flex justify-center items-center gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+           <span className="flex items-center gap-1.5"><ShieldCheck size={12}/> Secure</span>
+           <span className="flex items-center gap-1.5"><Lock size={12}/> Private</span>
+           <span className="flex items-center gap-1.5"><User size={12}/> Verified</span>
         </div>
       </div>
     </div>

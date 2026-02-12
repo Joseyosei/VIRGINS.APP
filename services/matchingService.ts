@@ -14,7 +14,7 @@ const MOCK_DB: UserProfile[] = [
     values: ['Purity', 'Family', 'Homeschooling'],
     intention: 'Marriage ASAP',
     lifestyle: 'Traditional',
-    image: 'https://picsum.photos/400/500?random=1',
+    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80',
     bio: 'Saving myself for marriage. Looking for a spiritual leader.'
   },
   {
@@ -29,7 +29,7 @@ const MOCK_DB: UserProfile[] = [
     values: ['Kindness', 'Family', 'Travel'],
     intention: 'Dating to Marry',
     lifestyle: 'Moderate',
-    image: 'https://picsum.photos/400/500?random=2',
+    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
     bio: 'Love Jesus and coffee. Want a family one day.'
   },
   {
@@ -44,7 +44,7 @@ const MOCK_DB: UserProfile[] = [
     values: ['Purity', 'Tradition', 'Pro-Life'],
     intention: 'Marriage ASAP',
     lifestyle: 'Traditional',
-    image: 'https://picsum.photos/400/500?random=3',
+    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
     bio: 'Traditional Catholic mass attendee. Values faith above all.'
   },
   {
@@ -59,7 +59,7 @@ const MOCK_DB: UserProfile[] = [
     values: ['Leadership', 'Purity', 'Family'],
     intention: 'Marriage ASAP',
     lifestyle: 'Traditional',
-    image: 'https://picsum.photos/400/500?random=4',
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80',
     bio: 'Biblical manhood. Seeking a Proverbs 31 woman.'
   },
   {
@@ -74,7 +74,7 @@ const MOCK_DB: UserProfile[] = [
     values: ['Career', 'Faith', 'Sports'],
     intention: 'Marriage in 1-2 years',
     lifestyle: 'Modern',
-    image: 'https://picsum.photos/400/500?random=5',
+    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80',
     bio: 'Work hard, pray hard.'
   }
 ];

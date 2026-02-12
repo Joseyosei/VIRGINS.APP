@@ -33,7 +33,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
           <div className="relative z-10 p-8 flex flex-col items-center">
             <div className="relative mb-4">
                <img 
-                 src="https://picsum.photos/200/200?random=50" 
+                 src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" 
                  alt="Profile" 
                  className="w-32 h-32 rounded-full border-4 border-gold-500 shadow-2xl object-cover"
                />

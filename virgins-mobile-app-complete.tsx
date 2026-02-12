@@ -32,7 +32,7 @@ import {
 } from 'react-native';
 // Note: In a real project, you would import these from '@react-navigation/...'
 // We are mocking navigation state for this single-file demonstration
-import { Heart, MessageCircle, User, Shield, Check, X, ArrowRight, Settings, Camera, Mic, Gem, ChevronLeft, Search, Filter, Lock, Mail, Star, Crown, Zap, Eye, CheckCircle } from 'lucide-react-native';
+import { Heart, MessageCircle, User, Shield, Check, X, ArrowRight, Settings, Camera, Mic, Gem, ChevronLeft, Search, Filter, Lock, Mail, Star, Crown, Zap, Eye, CheckCircle, ChevronDown, Info } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 // --- THEME ---
@@ -47,7 +47,8 @@ const COLORS = {
   gray: '#888888',
   lightGray: '#F5F5F5',
   red: '#FF6B6B',
-  green: '#44FF44'
+  green: '#44FF44',
+  primaryBlue: '#3d5f83'
 };
 
 const FONTS = {
@@ -57,9 +58,60 @@ const FONTS = {
 
 // --- MOCK DATA ---
 const MOCK_PROFILES = [
-  { id: '1', name: 'Sarah', age: 24, location: 'Austin, TX', bio: 'Faith-driven and waiting for the right one. Love classical music and hiking.', image: 'https://picsum.photos/400/600?random=1', verified: true, values: ['Faith', 'Family', 'Music'] },
-  { id: '2', name: 'Hannah', age: 22, location: 'Dallas, TX', bio: 'Teacher. Values tradition, family, and kindness.', image: 'https://picsum.photos/400/600?random=2', verified: true, values: ['Teaching', 'Kindness', 'Tradition'] },
-  { id: '3', name: 'Elizabeth', age: 26, location: 'Houston, TX', bio: 'Nurse. Looking for a leader and future husband.', image: 'https://picsum.photos/400/600?random=3', verified: true, values: ['Nursing', 'Leadership', 'Marriage'] },
+  { 
+    id: '1', 
+    name: 'Sarah', 
+    age: 24, 
+    location: 'Austin, TX', 
+    bio: 'Faith-driven and waiting for the right one. Love classical music and hiking.', 
+    image: 'https://picsum.photos/400/600?random=1', 
+    verified: true, 
+    values: ['Faith', 'Family', 'Music'],
+    matchScore: 92,
+    breakdown: { 
+      faithScore: 35, 
+      valuesScore: 28, 
+      intentionScore: 25, 
+      lifestyleScore: 4 
+    },
+    reasons: ['High Theological Alignment', 'Marriage Minded', 'Shared Hobbies: Hiking']
+  },
+  { 
+    id: '2', 
+    name: 'Hannah', 
+    age: 22, 
+    location: 'Dallas, TX', 
+    bio: 'Teacher. Values tradition, family, and kindness.', 
+    image: 'https://picsum.photos/400/600?random=2', 
+    verified: true, 
+    values: ['Teaching', 'Kindness', 'Tradition'],
+    matchScore: 85,
+    breakdown: { 
+      faithScore: 30, 
+      valuesScore: 25, 
+      intentionScore: 20, 
+      lifestyleScore: 10 
+    },
+    reasons: ['Value Match: Tradition', 'Active in Community']
+  },
+  { 
+    id: '3', 
+    name: 'Elizabeth', 
+    age: 26, 
+    location: 'Houston, TX', 
+    bio: 'Nurse. Looking for a leader and future husband.', 
+    image: 'https://picsum.photos/400/600?random=3', 
+    verified: true, 
+    values: ['Nursing', 'Leadership', 'Marriage'],
+    matchScore: 88,
+    breakdown: { 
+      faithScore: 32, 
+      valuesScore: 26, 
+      intentionScore: 22, 
+      lifestyleScore: 8 
+    },
+    reasons: ['Marriage Intentionality', 'Shared Career Values']
+  },
 ];
 
 const MOCK_MESSAGES = [
@@ -80,7 +132,7 @@ type SubscriptionTier = 'free' | 'plus' | 'ultimate';
 // --- CONTEXT ---
 const AuthContext = createContext<any>(null);
 
-const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [subscription, setSubscription] = useState<SubscriptionTier>('free');
   const [isLoading, setIsLoading] = useState(false);
@@ -112,7 +164,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const purchaseSubscription = (tier: SubscriptionTier) => {
     setIsLoading(true);
-    // Simulate API call to RevenueCat/App Store
     setTimeout(() => {
       setSubscription(tier);
       setIsLoading(false);
@@ -157,7 +208,7 @@ const InputField = ({ placeholder, value, onChangeText, secureTextEntry }: any) 
 
 // --- SCREENS ---
 
-// 1. PAYWALL SCREEN (NEW)
+// 1. PAYWALL SCREEN
 const PaywallScreen = ({ navigation }: any) => {
   const { purchaseSubscription, subscription } = useContext(AuthContext);
   const [selectedPlan, setSelectedPlan] = useState<'plus' | 'ultimate'>('ultimate');
@@ -339,7 +390,6 @@ const SignUpScreen = ({ navigation }: any) => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleNext = () => {
-    // Navigate to Email Verification instead of Profile Setup
     navigation.navigate('EmailVerification', { email });
   };
 
@@ -375,7 +425,6 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
 
   const handleVerify = () => {
     setIsVerifying(true);
-    // Simulate verification delay
     setTimeout(() => {
       setIsVerifying(false);
       Alert.alert("Success", "Email verified successfully!", [
@@ -418,7 +467,6 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
 };
 
 // 6. PROFILE SETUP STEPS
-// Step 1: Basic Identity
 const ProfileSetup1 = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -450,7 +498,6 @@ const ProfileSetup1 = ({ navigation }: any) => {
   );
 };
 
-// Step 2: About You
 const ProfileSetup2 = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -483,7 +530,6 @@ const ProfileSetup2 = ({ navigation }: any) => {
   );
 };
 
-// Step 3: Core Values (Required)
 const ProfileSetup3 = ({ navigation }: any) => {
   const values = ['Faith', 'Family', 'Commitment', 'Purity', 'Marriage', 'Children', 'Tradition', 'Respect', 'Honesty', 'Loyalty'];
   return (
@@ -510,12 +556,10 @@ const ProfileSetup3 = ({ navigation }: any) => {
   );
 };
 
-// Step 4: Photos
 const ProfileSetup4 = ({ navigation }: any) => {
   const [photos, setPhotos] = useState<(string | null)[]>([null, null, null, null, null, null]);
 
   const pickImage = async (index: number) => {
-    // Request permissions
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission needed', 'Sorry, we need camera roll permissions to make this work!');
@@ -590,7 +634,7 @@ const ProfileSetup4 = ({ navigation }: any) => {
 
 // 7. VERIFICATION
 const VerificationScreen = ({ navigation }: any) => {
-  const { login } = useContext(AuthContext); // Actually trigger login state to enter app
+  const { login } = useContext(AuthContext);
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={[styles.contentContainer, {justifyContent: 'center', alignItems: 'center'}]}>
@@ -622,6 +666,8 @@ const VerificationScreen = ({ navigation }: any) => {
 // 8. MAIN APP TABS
 const DiscoverScreen = ({ navigation }: any) => {
   const { subscription } = useContext(AuthContext);
+  const [showDetails, setShowDetails] = useState(false);
+  const profile = MOCK_PROFILES[0];
 
   const handlePremiumAction = () => {
     if (subscription === 'free') {
@@ -630,6 +676,18 @@ const DiscoverScreen = ({ navigation }: any) => {
       Alert.alert('Action', 'Feature available!');
     }
   };
+
+  const ScoreBar = ({ label, score, color, max }: any) => (
+    <View style={styles.scoreBarContainer}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+        <Text style={styles.scoreBarLabel}>{label}</Text>
+        <Text style={styles.scoreBarValue}>{score}/{max}</Text>
+      </View>
+      <View style={styles.scoreBarBg}>
+        <View style={[styles.scoreBarFill, { width: `${(score/max) * 100}%`, backgroundColor: color }]} />
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -642,34 +700,93 @@ const DiscoverScreen = ({ navigation }: any) => {
       </View>
       
       <View style={styles.cardContainer}>
-        {/* Simplified Swipe Card */}
-        <Image source={{ uri: MOCK_PROFILES[0].image }} style={styles.cardImage} />
-        <View style={styles.cardGradient} />
-        <View style={styles.cardContent}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardName}>{MOCK_PROFILES[0].name}, {MOCK_PROFILES[0].age}</Text>
-            {MOCK_PROFILES[0].verified && <Gem color={COLORS.goldMid} size={20} style={{marginLeft: 8}} />}
+        <TouchableOpacity 
+          activeOpacity={0.9} 
+          style={{ flex: 1 }} 
+          onPress={() => setShowDetails(!showDetails)}
+        >
+          <Image source={{ uri: profile.image }} style={styles.cardImage} />
+          
+          {/* Default Overlay */}
+          {!showDetails && <View style={styles.cardGradient} />}
+          
+          <View style={[styles.cardContent, showDetails && styles.cardContentExpanded]}>
+            {showDetails ? (
+              <ScrollView showsVerticalScrollIndicator={false} style={styles.detailsScroll}>
+                <View style={styles.detailsHeader}>
+                  <Text style={styles.cardName}>{profile.name}, {profile.age}</Text>
+                  <View style={styles.matchScoreBadgeLarge}>
+                     <Text style={styles.matchScoreTextLarge}>{profile.matchScore}% Match</Text>
+                  </View>
+                </View>
+
+                <View style={styles.detailsSection}>
+                  <Text style={styles.detailsSectionTitle}>Compatibility Breakdown</Text>
+                  <ScoreBar label="Faith Alignment" score={profile.breakdown.faithScore} color={COLORS.goldMid} max={35} />
+                  <ScoreBar label="Core Values" score={profile.breakdown.valuesScore} color="#FF6B6B" max={30} />
+                  <ScoreBar label="Timeline Intent" score={profile.breakdown.intentionScore} color="#44FF44" max={25} />
+                  <ScoreBar label="Lifestyle Compatibility" score={profile.breakdown.lifestyleScore} color="#3B82F6" max={10} />
+                </View>
+
+                <View style={styles.detailsSection}>
+                  <Text style={styles.detailsSectionTitle}>Why you're a great match</Text>
+                  <View style={{ gap: 8 }}>
+                    {profile.reasons.map((reason, idx) => (
+                      <View key={idx} style={styles.reasonRow}>
+                        <CheckCircle size={16} color={COLORS.goldMid} />
+                        <Text style={styles.reasonText}>{reason}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.detailsSection}>
+                   <Text style={styles.detailsSectionTitle}>Bio</Text>
+                   <Text style={styles.detailsBioText}>{profile.bio}</Text>
+                </View>
+                
+                <TouchableOpacity style={styles.closeDetailsBtn} onPress={() => setShowDetails(false)}>
+                  <ChevronDown color={COLORS.white} size={24} />
+                  <Text style={styles.closeDetailsText}>Swipe to See More</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            ) : (
+              <>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.cardName}>{profile.name}, {profile.age}</Text>
+                  {profile.verified && <Gem color={COLORS.goldMid} size={20} style={{marginLeft: 8}} />}
+                  <View style={styles.matchScoreBadgeSmall}>
+                     <Text style={styles.matchScoreTextSmall}>{profile.matchScore}%</Text>
+                  </View>
+                </View>
+                <Text style={styles.cardLocation}>{profile.location}</Text>
+                <View style={styles.cardTags}>
+                   {profile.values.map(v => (
+                     <View key={v} style={styles.cardTag}><Text style={styles.cardTagText}>{v}</Text></View>
+                   ))}
+                </View>
+                <View style={styles.tapTip}>
+                  <Info size={12} color={COLORS.cream} />
+                  <Text style={styles.tapTipText}>Tap for match details</Text>
+                </View>
+              </>
+            )}
           </View>
-          <Text style={styles.cardLocation}>{MOCK_PROFILES[0].location}</Text>
-          <View style={styles.cardTags}>
-             {MOCK_PROFILES[0].values.map(v => (
-               <View key={v} style={styles.cardTag}><Text style={styles.cardTagText}>{v}</Text></View>
-             ))}
-          </View>
-          <Text style={styles.cardBio}>{MOCK_PROFILES[0].bio}</Text>
-        </View>
+        </TouchableOpacity>
         
-        <View style={styles.actionButtons}>
-          <TouchableOpacity style={[styles.actionButton, styles.passButton]}>
-            <X color={COLORS.red} size={32} />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.superLikeButton]} onPress={handlePremiumAction}>
-             <Gem color="#3B82F6" size={24} />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.likeButton]}>
-            <Heart color={COLORS.green} size={32} fill={COLORS.green} />
-          </TouchableOpacity>
-        </View>
+        {!showDetails && (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={[styles.actionButton, styles.passButton]}>
+              <X color={COLORS.red} size={32} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.actionButton, styles.superLikeButton]} onPress={handlePremiumAction}>
+               <Gem color="#3B82F6" size={24} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.actionButton, styles.likeButton]}>
+              <Heart color={COLORS.green} size={32} fill={COLORS.green} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -704,7 +821,7 @@ const LikesScreen = ({ navigation }: any) => {
             <Image 
               source={{ uri: item.image }} 
               style={styles.gridImage} 
-              blurRadius={isFree ? 15 : 0} // Feature Gate
+              blurRadius={isFree ? 15 : 0}
             />
             {isFree ? (
               <View style={[styles.gridOverlay, { justifyContent: 'center', alignItems: 'center', height: '100%' }]}>
@@ -762,7 +879,7 @@ const MessagesScreen = ({ onChatOpen, navigation }: any) => {
             {item.unread && (
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                  {subscription === 'plus' || subscription === 'ultimate' ? (
-                   <Eye size={12} color={COLORS.goldMid} style={{marginRight: 4}} /> // Read Receipt Sim
+                   <Eye size={12} color={COLORS.goldMid} style={{marginRight: 4}} />
                  ) : null}
                  <View style={styles.unreadDot} />
               </View>
@@ -940,31 +1057,22 @@ const TabBar = ({ currentTab, setTab }: any) => (
 
 // --- MAIN APP COMPONENT ---
 export default function VirginsMobileApp() {
-  // Simple state-based navigation for demo purposes
-  // In a real app, this would be React Navigation
   const [screen, setScreen] = useState('welcome'); 
   const [tab, setTab] = useState('discover');
   
-  // Fake context provider wrapper (logic moved to AuthProvider)
-  
   const MainStack = () => {
-    // Nav stacks
     if (screen === 'welcome') return <WelcomeScreen navigation={{ navigate: setScreen }} />;
     if (screen === 'Login') return <LoginScreen navigation={{ goBack: () => setScreen('welcome'), navigate: setScreen }} />;
     if (screen === 'SignUp') return <SignUpScreen navigation={{ goBack: () => setScreen('welcome'), navigate: setScreen }} />;
     if (screen === 'EmailVerification') return <EmailVerificationScreen navigation={{ navigate: setScreen }} route={{ params: { email: 'demo@user.com' } }} />;
     
-    // Profile Setup Flow
     if (screen === 'ProfileSetup1') return <ProfileSetup1 navigation={{ navigate: setScreen }} />;
     if (screen === 'ProfileSetup2') return <ProfileSetup2 navigation={{ navigate: setScreen }} />;
     if (screen === 'ProfileSetup3') return <ProfileSetup3 navigation={{ navigate: setScreen }} />;
     if (screen === 'ProfileSetup4') return <ProfileSetup4 navigation={{ navigate: setScreen }} />;
     if (screen === 'Verification') return <VerificationScreen navigation={{ navigate: setScreen }} />;
     
-    // Paywall
     if (screen === 'Paywall') return <PaywallScreen navigation={{ goBack: () => setScreen('main') }} />;
-
-    // Main App
     if (screen === 'chat') return <ChatScreen onBack={() => setScreen('main')} navigation={{ navigate: setScreen }} />;
 
     const { logout } = useContext(AuthContext);
@@ -1083,10 +1191,11 @@ const styles = StyleSheet.create({
   goldBadgeText: { color: COLORS.navyDark, fontSize: 10, fontWeight: 'bold' },
   
   // Cards
-  cardContainer: { flex: 1, margin: 10, borderRadius: 20, overflow: 'hidden', position: 'relative', backgroundColor: '#000' },
+  cardContainer: { flex: 1, margin: 10, borderRadius: 20, overflow: 'hidden', position: 'relative', backgroundColor: COLORS.navyDark },
   cardImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   cardGradient: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 250, backgroundColor: 'rgba(0,0,0,0.6)' }, 
   cardContent: { position: 'absolute', bottom: 100, left: 20, right: 20 },
+  cardContentExpanded: { top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(26, 26, 46, 0.95)', padding: 25, paddingTop: 40 },
   cardHeader: { flexDirection: 'row', alignItems: 'center' },
   cardName: { fontSize: 32, color: COLORS.white, fontWeight: 'bold', fontFamily: FONTS.serif },
   cardLocation: { fontSize: 16, color: COLORS.cream, marginTop: 4 },
@@ -1095,6 +1204,28 @@ const styles = StyleSheet.create({
   cardTagText: { color: COLORS.goldLight, fontSize: 12 },
   cardBio: { fontSize: 16, color: COLORS.white, marginTop: 12, opacity: 0.9, lineHeight: 22 },
   
+  // Match Details
+  detailsScroll: { flex: 1 },
+  detailsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 25, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.1)', paddingBottom: 20 },
+  matchScoreBadgeLarge: { backgroundColor: COLORS.goldMid, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  matchScoreTextLarge: { color: COLORS.navyDark, fontWeight: 'bold', fontSize: 14 },
+  matchScoreBadgeSmall: { backgroundColor: COLORS.goldMid, marginLeft: 'auto', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  matchScoreTextSmall: { color: COLORS.navyDark, fontWeight: 'bold', fontSize: 12 },
+  detailsSection: { marginBottom: 30 },
+  detailsSectionTitle: { color: COLORS.goldLight, fontSize: 12, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 15 },
+  detailsBioText: { color: COLORS.white, fontSize: 16, lineHeight: 24, opacity: 0.8 },
+  scoreBarContainer: { marginBottom: 15 },
+  scoreBarLabel: { color: COLORS.white, fontSize: 14, opacity: 0.9 },
+  scoreBarValue: { color: COLORS.white, fontSize: 14, fontWeight: 'bold' },
+  scoreBarBg: { width: '100%', height: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4, overflow: 'hidden' },
+  scoreBarFill: { height: '100%', borderRadius: 4 },
+  reasonRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  reasonText: { color: COLORS.white, fontSize: 15, opacity: 0.9 },
+  closeDetailsBtn: { alignItems: 'center', marginTop: 20, paddingBottom: 40 },
+  closeDetailsText: { color: COLORS.gray, fontSize: 12, marginTop: 8 },
+  tapTip: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 15, opacity: 0.6 },
+  tapTipText: { color: COLORS.cream, fontSize: 12 },
+
   // Action Buttons
   actionButtons: { position: 'absolute', bottom: 30, flexDirection: 'row', justifyContent: 'space-evenly', width: '100%', alignItems: 'center' },
   actionButton: { width: 60, height: 60, borderRadius: 30, backgroundColor: COLORS.white, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, elevation: 5 },

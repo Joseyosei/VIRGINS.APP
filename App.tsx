@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageView } from './types';
 
 // Components
@@ -14,6 +14,11 @@ import WaitlistPage from './components/WaitlistPage';
 import MatchmakerDemo from './components/MatchmakerDemo';
 import AdminDashboard from './components/AdminDashboard';
 import UserProfile from './components/UserProfile';
+import DatePlanner from './components/DatePlanner';
+import NearbyMap from './components/NearbyMap';
+import LoginPage from './components/LoginPage';
+import SignupPage from './components/SignupPage';
+import SplashIntro from './components/SplashIntro';
 
 // Pages
 import { HowItWorks, Pricing } from './components/ProductPages';
@@ -21,6 +26,20 @@ import { About, Careers, Press, Contact, Privacy, Terms, Cookies, Safety } from 
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
+  const [showSplash, setShowSplash] = useState(true);
+
+  // Check if splash has been shown in this session
+  useEffect(() => {
+    const hasSeenSplash = sessionStorage.getItem('virgins_splash_seen');
+    if (hasSeenSplash) {
+      setShowSplash(false);
+    }
+  }, []);
+
+  const handleSplashComplete = () => {
+    sessionStorage.setItem('virgins_splash_seen', 'true');
+    setShowSplash(false);
+  };
 
   const renderPage = () => {
     switch (currentPage) {
@@ -37,8 +56,16 @@ const App: React.FC = () => {
         );
       case 'waitlist':
         return <WaitlistPage onNavigate={setCurrentPage} />;
+      case 'login':
+        return <LoginPage onNavigate={setCurrentPage} />;
+      case 'signup':
+        return <SignupPage onNavigate={setCurrentPage} />;
       case 'matchmaker':
         return <MatchmakerDemo />;
+      case 'nearby':
+        return <NearbyMap />;
+      case 'date-planner':
+        return <DatePlanner />;
       case 'admin':
         return <AdminDashboard />;
       case 'profile':
@@ -68,12 +95,23 @@ const App: React.FC = () => {
     }
   };
 
+  if (showSplash) {
+    return <SplashIntro onComplete={handleSplashComplete} />;
+  }
+
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <Header onNavigate={setCurrentPage} currentPage={currentPage} />
       {renderPage()}
-      {/* Hide footer on waitlist/admin page for cleaner look. */}
-      {currentPage !== 'waitlist' && currentPage !== 'admin' && currentPage !== 'profile' && <Footer onNavigate={setCurrentPage} />}
+      {/* Hide footer on specialized pages for cleaner look. */}
+      {currentPage !== 'waitlist' && 
+       currentPage !== 'admin' && 
+       currentPage !== 'profile' && 
+       currentPage !== 'nearby' && 
+       currentPage !== 'date-planner' && 
+       currentPage !== 'login' &&
+       currentPage !== 'signup' &&
+       <Footer onNavigate={setCurrentPage} />}
     </div>
   );
 };

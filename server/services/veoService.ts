@@ -39,7 +39,8 @@ export const generateVideoIntro = async (imageBase64: string, name: string) => {
     const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
     const videoBuffer = await videoResponse.arrayBuffer();
     
-    return Buffer.from(videoBuffer).toString('base64');
+    // Fix: Access Buffer via globalThis to resolve "Cannot find name 'Buffer'" error
+    return (globalThis as any).Buffer.from(videoBuffer).toString('base64');
     
   } catch (error) {
     console.error("Veo Generation Error:", error);
