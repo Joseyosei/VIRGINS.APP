@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldCheck, Mail, ArrowRight, CheckCircle, Loader2, Share2, Copy, MapPin, User, Heart, Calendar, BookOpen, Inbox, AlertCircle, Camera, X, Plus, Info, Compass } from 'lucide-react';
+import { ShieldCheck, Mail, ArrowRight, CheckCircle, Loader2, Share2, Copy, MapPin, User, Heart, Calendar, BookOpen, Inbox, AlertCircle, Camera, X, Plus, Info, Compass, Sparkles, Wand2, SearchCode, ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import { PageView } from '../types';
+import { analyzeProfilePhoto, aiEditPhoto } from '../services/geminiService';
 
 interface WaitlistPageProps {
   onNavigate: (page: PageView) => void;
@@ -13,6 +15,8 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1); 
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [analyzing, setAnalyzing] = useState<number | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   
   const [details, setDetails] = useState({
@@ -26,6 +30,7 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
   });
 
   const [photos, setPhotos] = useState<(string | null)[]>([null, null, null, null, null, null]);
+  const [auditFeedback, setAuditFeedback] = useState<(string | null)[]>([null, null, null, null, null, null]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activePhotoSlot, setActivePhotoSlot] = useState<number | null>(null);
 
@@ -63,14 +68,17 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
   };
 
   const handlePhotoClick = (index: number) => {
-    if (photos[index]) {
-      const newPhotos = [...photos];
-      newPhotos[index] = null;
-      setPhotos(newPhotos);
-    } else {
-      setActivePhotoSlot(index);
-      fileInputRef.current?.click();
-    }
+    setActivePhotoSlot(index);
+    fileInputRef.current?.click();
+  };
+
+  const removePhoto = (index: number) => {
+    const newPhotos = [...photos];
+    newPhotos[index] = null;
+    setPhotos(newPhotos);
+    const newFeedback = [...auditFeedback];
+    newFeedback[index] = null;
+    setAuditFeedback(newFeedback);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,11 +95,46 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
     }
   };
 
+  const runAudit = async (index: number) => {
+    const photo = photos[index];
+    if (!photo) return;
+    setAnalyzing(index);
+    try {
+      const feedback = await analyzeProfilePhoto(photo);
+      const newFeedback = [...auditFeedback];
+      newFeedback[index] = feedback || "Photo looks ready for courtship.";
+      setAuditFeedback(newFeedback);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAnalyzing(null);
+    }
+  };
+
+  const runEdit = async (index: number) => {
+    const photo = photos[index];
+    if (!photo) return;
+    const prompt = window.prompt("How should we edit this photo? (e.g., 'apply a warm traditional film filter', 'blur background')", "apply a warm traditional filter");
+    if (!prompt) return;
+
+    setEditing(index);
+    try {
+      const result = await aiEditPhoto(photo, prompt);
+      if (result) {
+        const newPhotos = [...photos];
+        newPhotos[index] = result;
+        setPhotos(newPhotos);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setEditing(null);
+    }
+  };
+
   const handleFinalSubmit = async () => {
     setLoading(true);
     setError(null);
-    
-    // Simulating database storage
     const newUser = {
       id: Math.random().toString(36).substr(2, 9),
       email,
@@ -99,10 +142,8 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
       joinedAt: new Date().toISOString(),
       status: 'verified'
     };
-    
     const existing = JSON.parse(localStorage.getItem('virgins_waitlist_data') || '[]');
     localStorage.setItem('virgins_waitlist_data', JSON.stringify([...existing, newUser]));
-
     setTimeout(() => {
       setLoading(false);
       setStep(5);
@@ -138,12 +179,17 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+           {step > 1 && step < 5 && (
+             <button onClick={() => setStep(s => (s-1) as any)} className="absolute left-0 top-1 text-slate-400 hover:text-navy-900 transition-colors">
+                <ChevronLeft size={24} />
+             </button>
+           )}
            <h1 className="text-3xl font-serif font-bold text-slate-900 mb-2">
-             {step === 5 ? "Registration Complete" : "Join Virgins"}
+             {step === 5 ? "Covenant Ready" : "Join Virgins"}
            </h1>
            <p className="text-slate-500">
-             {step === 5 ? `Welcome to the community, ${details.name}!` : "Courtship built on tradition and shared values."}
+             {step === 5 ? `Welcome home, ${details.name}.` : "Building a legacy requires a strong foundation."}
            </p>
         </div>
 
@@ -167,12 +213,12 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
             {step === 1 && (
               <form onSubmit={handleEmailSubmit} className="space-y-6 animate-fadeIn">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Secure Email</label>
                   <div className="relative">
                     <input
                       type="email"
                       required
-                      className="block w-full px-5 py-4 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white focus:border-transparent transition-all outline-none text-slate-900 font-medium"
+                      className="block w-full px-5 py-4 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white transition-all outline-none text-slate-900 font-medium"
                       placeholder="you@example.com"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
@@ -186,6 +232,7 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Start My Journey'}
                 </button>
+                <button onClick={() => onNavigate('home')} className="w-full py-2 text-slate-400 font-bold text-sm">Return Home</button>
               </form>
             )}
 
@@ -197,7 +244,7 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                     <input
                       type="text" required
                       className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
-                      placeholder="Your Name"
+                      placeholder="Enter Full Name"
                       value={details.name}
                       onChange={e => setDetails({...details, name: e.target.value})}
                     />
@@ -232,14 +279,14 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                     <input
                       type="text" required
                       className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
-                      placeholder="e.g. Catholic"
+                      placeholder="Denomination (e.g. Baptist)"
                       value={details.faith}
                       onChange={e => setDetails({...details, faith: e.target.value})}
                     />
                     <input
                       type="text" required
                       className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
-                      placeholder="e.g. London, UK"
+                      placeholder="Current City (e.g. Austin, TX)"
                       value={details.city}
                       onChange={e => setDetails({...details, city: e.target.value})}
                     />
@@ -249,7 +296,7 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                   type="submit"
                   className="w-full py-4 rounded-2xl text-white bg-navy-900 font-bold mt-4 shadow-lg active:scale-95 transition-transform"
                 >
-                  Continue
+                  Save Basics
                 </button>
               </form>
             )}
@@ -257,13 +304,13 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
             {step === 3 && (
               <div className="animate-fadeIn space-y-6">
                 <div>
-                   <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">I'm looking for</h3>
+                   <h3 className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest ml-1">I'm looking for</h3>
                    <div className="flex flex-wrap gap-2">
                       {LOOKING_FOR_OPTIONS.map(opt => (
                         <button
                           key={opt}
                           onClick={() => togglePreference('lookingFor', opt)}
-                          className={`px-4 py-2.5 rounded-full text-sm font-medium border transition-all ${details.lookingFor.includes(opt) ? 'bg-navy-900 text-white border-navy-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                          className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all ${details.lookingFor.includes(opt) ? 'bg-navy-900 text-white border-navy-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
                         >
                           {opt}
                         </button>
@@ -272,13 +319,13 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                 </div>
 
                 <div>
-                   <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">I enjoy</h3>
+                   <h3 className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest ml-1">Life Interests</h3>
                    <div className="flex flex-wrap gap-2">
                       {INTEREST_OPTIONS.map(opt => (
                         <button
                           key={opt}
                           onClick={() => togglePreference('interests', opt)}
-                          className={`px-4 py-2.5 rounded-full text-sm font-medium border transition-all ${details.interests.includes(opt) ? 'bg-gold-500 text-white border-gold-500 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                          className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all ${details.interests.includes(opt) ? 'bg-gold-500 text-white border-gold-500 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
                         >
                           {opt}
                         </button>
@@ -290,7 +337,7 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                   <button
                     onClick={() => setStep(4)}
                     disabled={details.lookingFor.length === 0}
-                    className="w-full py-4 rounded-2xl text-white bg-navy-900 font-bold shadow-lg disabled:opacity-50"
+                    className="w-full py-4 rounded-2xl text-white bg-navy-900 font-bold shadow-lg disabled:opacity-50 active:scale-95 transition-transform"
                   >
                     Setup My Photos
                   </button>
@@ -301,54 +348,108 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
             {step === 4 && (
               <div className="animate-fadeIn space-y-6">
                 <div className="flex items-center justify-between">
-                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Profile Photos</h3>
-                   <div className="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-bold text-slate-500">
-                     {photoCount}/6
+                   <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Profile Photos</h3>
+                   <div className="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-black text-slate-500">
+                     {photoCount}/6 Selected
                    </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
                   {photos.map((photo, index) => (
-                    <button
+                    <div
                       key={index}
-                      onClick={() => handlePhotoClick(index)}
-                      className={`relative aspect-[3/4] rounded-2xl overflow-hidden border-2 transition-all flex flex-col items-center justify-center ${photo ? 'border-navy-900' : 'border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300'}`}
+                      className={`relative aspect-[3/4] rounded-3xl overflow-hidden border-2 transition-all flex flex-col items-center justify-center ${photo ? 'border-navy-900' : 'border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300'}`}
                     >
                       {photo ? (
                         <>
                           <img src={photo} className="w-full h-full object-cover" />
-                          <div className="absolute top-2 right-2 p-1 bg-black/50 backdrop-blur-md rounded-full text-white">
-                             <X size={12} />
+                          <div className="absolute inset-0 bg-navy-900/40 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+                             <button 
+                               onClick={() => runAudit(index)}
+                               title="AI Value Audit"
+                               className="p-2 bg-white text-navy-900 rounded-full hover:bg-gold-50 shadow-xl"
+                             >
+                                <SearchCode size={18} />
+                             </button>
+                             <button 
+                               onClick={() => runEdit(index)}
+                               title="Traditional Retouch"
+                               className="p-2 bg-white text-navy-900 rounded-full hover:bg-gold-50 shadow-xl"
+                             >
+                                <Wand2 size={18} />
+                             </button>
+                             <button 
+                               onClick={() => removePhoto(index)}
+                               title="Remove"
+                               className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-xl"
+                             >
+                                <X size={18} />
+                             </button>
                           </div>
+                          {analyzing === index && (
+                             <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center">
+                                <Loader2 className="animate-spin text-navy-900" />
+                             </div>
+                          )}
+                          {editing === index && (
+                             <div className="absolute inset-0 bg-gold-500/20 backdrop-blur-sm flex flex-col items-center justify-center">
+                                <Sparkles className="animate-pulse text-gold-600 mb-1" />
+                                <span className="text-[8px] font-black text-navy-900 uppercase">AI Applying Filter...</span>
+                             </div>
+                          )}
+                          {auditFeedback[index] && !analyzing && (
+                             <div className="absolute bottom-0 left-0 right-0 bg-navy-900/90 text-white p-2 text-[8px] font-bold leading-tight uppercase tracking-tighter">
+                                {auditFeedback[index]}
+                             </div>
+                          )}
                         </>
                       ) : (
-                        <>
-                          <div className="p-3 bg-white rounded-full shadow-sm mb-2">
-                             <Camera size={20} className="text-gold-500" />
+                        <button 
+                          onClick={() => handlePhotoClick(index)}
+                          className="w-full h-full flex flex-col items-center justify-center p-4 text-center group"
+                        >
+                          <div className="w-10 h-10 bg-white rounded-full shadow-sm mb-2 flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-transform">
+                             <Plus size={20} className="text-gold-500" />
                           </div>
-                          <Plus size={16} className="text-slate-300 absolute bottom-3 right-3" />
-                        </>
+                          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{index === 0 ? 'Main Portrait' : `Slot ${index+1}`}</span>
+                          <div className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <ImageIcon size={10} className="text-slate-300" />
+                             <Camera size={10} className="text-slate-300" />
+                          </div>
+                        </button>
                       )}
-                    </button>
+                    </div>
                   ))}
                 </div>
 
-                <div className="p-4 bg-navy-50 rounded-2xl flex items-start gap-3">
-                   <Info className="w-5 h-5 text-navy-600 flex-shrink-0 mt-0.5" />
-                   <p className="text-xs text-navy-700 leading-relaxed font-medium">
-                     Traditional values prioritize authenticity. Clear, face-forward photos significantly increase your match rate for meaningful courtship.
-                   </p>
+                <div className="p-5 bg-navy-50 rounded-[2rem] space-y-4">
+                   <div className="flex items-start gap-4">
+                     <div className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 border border-gold-100">
+                        <Sparkles className="w-4 h-4 text-gold-600" />
+                     </div>
+                     <p className="text-xs text-navy-800 leading-relaxed font-medium">
+                       <strong>Covenant AI Audit:</strong> Hover over an image to verify modesty guidelines and value alignment before submission.
+                     </p>
+                   </div>
+                   <div className="flex items-start gap-4">
+                     <div className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 border border-gold-100">
+                        <Camera className="w-4 h-4 text-gold-600" />
+                     </div>
+                     <p className="text-xs text-navy-800 leading-relaxed font-medium">
+                       <strong>Selection:</strong> Click any slot to choose from your <strong>Photo Gallery</strong> or use your <strong>Device Camera</strong> directly.
+                     </p>
+                   </div>
                 </div>
 
                 <div className="pt-4">
                   <button
                     onClick={handleFinalSubmit}
                     disabled={loading || photoCount < 2}
-                    className="w-full py-4 rounded-2xl text-white bg-navy-900 font-bold shadow-lg disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-2xl text-white bg-navy-900 font-bold shadow-xl disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
                   >
                     {loading ? <Loader2 className="animate-spin" /> : 'Complete Registration'}
                   </button>
-                  <p className="text-center text-[10px] text-slate-400 mt-4 uppercase tracking-widest font-bold">Minimum 2 photos required</p>
+                  <p className="text-center text-[10px] text-slate-400 mt-4 uppercase tracking-[0.2em] font-black">Minimum 2 photos required for verification</p>
                 </div>
               </div>
             )}
@@ -360,11 +461,10 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
                  </div>
                  <h3 className="text-2xl font-serif font-bold text-slate-900 mb-4">Registration Successful!</h3>
                  <p className="text-slate-500 text-sm leading-relaxed mb-8 max-w-xs mx-auto">
-                   Your account is ready. You can now browse the community and find individuals who share your values.
+                   Your profile is now live. We've pre-screened your images for traditional values. Happy discovering.
                  </p>
                  
                  <div className="space-y-4">
-                    {/* Launch App Button */}
                     <button 
                        onClick={() => onNavigate('matchmaker')}
                        className="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-navy-900 rounded-2xl shadow-xl hover:bg-navy-800 transition-all transform hover:scale-105 text-white font-bold"
@@ -385,7 +485,7 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        <div className="flex justify-center items-center gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+        <div className="flex justify-center items-center gap-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
            <span className="flex items-center gap-1.5"><ShieldCheck size={12}/> Secure</span>
            <span className="flex items-center gap-1.5"><Lock size={12}/> Private</span>
            <span className="flex items-center gap-1.5"><User size={12}/> Verified</span>

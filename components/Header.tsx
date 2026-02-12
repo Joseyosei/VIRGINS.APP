@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowRight, MapPin, Calendar, Gem, User, CheckCircle, Compass, Sparkles } from 'lucide-react';
 import { PageView } from '../types';
@@ -28,42 +29,45 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   const navItemClass = (page: PageView) => 
     `group flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-500 ${
       currentPage === page 
-        ? 'bg-navy-900 text-gold-500 shadow-[0_0_20px_rgba(212,165,116,0.3)] scale-105' 
-        : 'text-slate-600 hover:text-navy-900 hover:bg-slate-100/80'
+        ? (scrolled ? 'bg-white text-navy-900' : 'bg-navy-900 text-gold-500') + ' shadow-lg scale-105' 
+        : (scrolled ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-navy-900 hover:bg-slate-100/80')
     }`;
 
-  const RingsLogo = ({ className }: { className?: string }) => (
+  const RingsLogo = ({ className, color = "#D4A574" }: { className?: string, color?: string }) => (
     <svg viewBox="0 0 100 80" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="35" cy="45" r="22" stroke="#D4A574" strokeWidth="5" />
-      <circle cx="65" cy="45" r="22" stroke="#D4A574" strokeWidth="5" />
-      <path d="M50 12 L60 28 L50 44 L40 28 Z" fill="#D4A574" stroke="white" strokeWidth="1" />
+      <circle cx="35" cy="45" r="22" stroke={color} strokeWidth="5" />
+      <circle cx="65" cy="45" r="22" stroke={color} strokeWidth="5" />
+      <path d="M50 12 L60 28 L50 44 L40 28 Z" fill={color} stroke="white" strokeWidth="1" />
     </svg>
   );
 
   return (
-    <header className="fixed w-full z-50 transition-all duration-700 px-4 pt-6">
-      <div className={`max-w-7xl mx-auto transition-all duration-700 ${scrolled ? 'translate-y-[-8px]' : ''}`}>
-        <div className={`flex justify-between items-center px-6 py-3.5 rounded-[2.5rem] border transition-all duration-700 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.15)] ${
+    <header className={`fixed w-full z-50 transition-all duration-700 px-4 ${scrolled ? 'pt-2' : 'pt-6'}`}>
+      <div className={`max-w-7xl mx-auto transition-all duration-700 ${scrolled ? 'scale-[0.98]' : ''}`}>
+        <div className={`flex justify-between items-center transition-all duration-700 shadow-2xl ${
           scrolled 
-            ? 'bg-white/90 backdrop-blur-2xl border-white/20' 
-            : 'bg-white/60 backdrop-blur-md border-white/40'
+            ? 'bg-navy-900/80 backdrop-blur-xl border-white/10 py-2.5 px-5 rounded-full' 
+            : 'bg-white/60 backdrop-blur-md border-white/40 py-3.5 px-6 rounded-[2.5rem]'
         }`}>
           
           {/* Logo Section */}
           <div className="flex items-center">
             <button onClick={() => handleNav('home')} className="flex items-center gap-3 group">
               <div className="relative">
-                <RingsLogo className="h-10 w-auto group-hover:rotate-[360deg] transition-transform duration-1000 ease-in-out" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gold-500 rounded-full border-2 border-white animate-pulse"></div>
+                <RingsLogo 
+                  className={`h-9 w-auto group-hover:rotate-[360deg] transition-transform duration-1000 ease-in-out ${scrolled ? 'brightness-125' : ''}`} 
+                  color={scrolled ? "#E6CFA6" : "#D4A574"}
+                />
+                <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white animate-pulse ${scrolled ? 'bg-gold-300' : 'bg-gold-500'}`}></div>
               </div>
-              <span className="hidden md:block text-2xl font-serif font-black tracking-widest uppercase text-navy-900">
+              <span className={`hidden md:block text-xl font-serif font-black tracking-widest uppercase transition-colors duration-500 ${scrolled ? 'text-white' : 'text-navy-900'}`}>
                 Virgins
               </span>
             </button>
           </div>
 
           {/* Desktop Navigation - Elite Pill Design */}
-          <nav className="hidden lg:flex items-center bg-slate-400/10 p-1 rounded-full border border-white/30 backdrop-blur-2xl">
+          <nav className={`hidden lg:flex items-center p-1 rounded-full border transition-all duration-500 ${scrolled ? 'bg-white/5 border-white/10' : 'bg-slate-400/10 border-white/30'}`}>
             <button onClick={() => handleNav('matchmaker')} className={navItemClass('matchmaker')}>
               <Compass size={16} className={currentPage === 'matchmaker' ? 'animate-spin-slow' : ''} /> Discover
             </button>
@@ -73,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
             <button onClick={() => handleNav('date-planner')} className={navItemClass('date-planner')}>
               <Calendar size={16} /> Plan Date
             </button>
-            <div className="w-px h-5 bg-slate-300/50 mx-2" />
+            <div className={`w-px h-5 mx-2 transition-colors ${scrolled ? 'bg-white/10' : 'bg-slate-300/50'}`} />
             <button onClick={() => handleNav('pricing')} className={navItemClass('pricing')}>
               <Gem size={14} /> Membership
             </button>
@@ -83,9 +87,13 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
           <div className="flex items-center gap-2 md:gap-5">
             <button 
               onClick={() => handleNav('profile')}
-              className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-gold-50 to-white px-5 py-2.5 rounded-full text-gold-700 font-bold text-xs border border-gold-200/50 hover:border-gold-400 transition-all shadow-sm active:scale-95"
+              className={`hidden sm:flex items-center gap-2 px-5 py-2 rounded-full font-bold text-[10px] border transition-all shadow-sm active:scale-95 ${
+                scrolled 
+                  ? 'bg-white/10 text-gold-300 border-white/20 hover:border-gold-300' 
+                  : 'bg-gradient-to-r from-gold-50 to-white text-gold-700 border-gold-200/50 hover:border-gold-400'
+              }`}
             >
-              <Sparkles size={14} className="text-gold-500" />
+              <Sparkles size={12} className={scrolled ? 'text-gold-300' : 'text-gold-500'} />
               <span className="tabular-nums">{beans}</span>
               <span className="opacity-40 uppercase tracking-tighter">Beans</span>
             </button>
@@ -93,32 +101,31 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => handleNav('login')}
-                className="hidden sm:block text-sm font-bold text-slate-500 hover:text-navy-900 px-3 transition-colors"
+                className={`hidden sm:block text-xs font-bold transition-colors px-3 ${scrolled ? 'text-white/60 hover:text-white' : 'text-slate-500 hover:text-navy-900'}`}
               >
                 Sign In
               </button>
               <button 
                 onClick={() => handleNav('signup')}
-                className="group relative overflow-hidden px-7 py-3 rounded-full shadow-2xl transition-all hover:scale-105 hover:-translate-y-0.5 active:scale-95"
+                className={`group relative overflow-hidden px-6 py-2.5 rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95 ${scrolled ? 'bg-gold-500' : 'bg-navy-900'}`}
               >
-                <div className="absolute inset-0 bg-navy-900 transition-colors group-hover:bg-navy-800"></div>
-                <span className="relative z-10 text-sm font-bold text-white tracking-wide">Get Started</span>
+                <span className={`relative z-10 text-xs font-black uppercase tracking-widest ${scrolled ? 'text-navy-900' : 'text-white'}`}>Get Started</span>
               </button>
               
               {/* Mobile Menu Toggle */}
               <button
                 type="button"
-                className="lg:hidden p-2.5 rounded-full bg-navy-900 text-gold-500 shadow-xl"
+                className={`lg:hidden p-2 rounded-full shadow-xl transition-colors ${scrolled ? 'bg-white text-navy-900' : 'bg-navy-900 text-gold-500'}`}
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
-                {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile menu - Ultra Modern Overlay */}
+      {/* Mobile menu Overlay */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 bg-navy-900/95 backdrop-blur-3xl lg:hidden p-8 flex flex-col animate-fadeIn">
           <div className="flex justify-between items-center mb-16">
@@ -156,11 +163,6 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
 
           <div className="pt-12 space-y-4">
              <button onClick={() => handleNav('signup')} className="w-full py-5 bg-gold-500 text-navy-900 rounded-[1.5rem] font-black text-xl shadow-2xl active:scale-95 transition-transform">Create Account</button>
-             <button onClick={() => handleNav('login')} className="w-full py-5 border-2 border-white/10 text-white rounded-[1.5rem] font-bold text-xl hover:bg-white/5 transition-colors">Sign In</button>
-          </div>
-          
-          <div className="mt-12 text-center text-white/20 text-[10px] font-bold uppercase tracking-[0.4em]">
-            Love Worth Waiting For
           </div>
         </div>
       )}

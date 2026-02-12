@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Crown, Star, Gem, Settings, ArrowRight, Lock, Shield, Edit, MapPin, Eye, Heart, Users, LogOut } from 'lucide-react';
+import { Crown, Star, Gem, Settings, ArrowRight, Lock, Shield, Edit, MapPin, Eye, Heart, Users, LogOut, TrendingUp, Sparkles } from 'lucide-react';
 import { PageView } from '../types';
 
 interface UserProfileProps {
@@ -96,6 +97,50 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
           </button>
         )}
 
+        {/* Profile Analytics - Premium Gated */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6 relative">
+          <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <TrendingUp size={14} className="text-navy-900" /> Profile Insights
+            </h3>
+            <span className="text-[10px] font-black text-navy-900 bg-gold-400/20 px-2 py-0.5 rounded-full">Last 7 Days</span>
+          </div>
+          
+          <div className="p-6 grid grid-cols-2 gap-6 relative">
+            {subscription === 'free' && (
+               <div className="absolute inset-0 bg-white/40 backdrop-blur-[6px] z-20 flex flex-col items-center justify-center p-6 text-center animate-fadeIn">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 shadow-lg border border-gold-100">
+                    <Sparkles className="w-6 h-6 text-gold-600" />
+                  </div>
+                  <h4 className="font-serif font-black text-navy-900 text-lg mb-1">See who's noticing you</h4>
+                  <p className="text-xs text-slate-500 mb-4 max-w-[200px]">Unlock detailed analytics and see exactly who liked your profile.</p>
+                  <button 
+                    onClick={() => onNavigate('pricing')} 
+                    className="px-6 py-2.5 bg-navy-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-xl hover:bg-navy-800 transition-all active:scale-95"
+                  >
+                    Explore Premium
+                  </button>
+               </div>
+            )}
+            
+            <div className="space-y-1">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Views this week</p>
+               <div className="flex items-end gap-2">
+                  <span className="text-4xl font-black text-navy-900 tabular-nums">124</span>
+                  <span className="text-xs font-bold text-green-600 mb-1.5">+12%</span>
+               </div>
+            </div>
+
+            <div className="space-y-1">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Likes received</p>
+               <div className="flex items-end gap-2">
+                  <span className="text-4xl font-black text-navy-900 tabular-nums">18</span>
+                  <span className="text-xs font-bold text-gold-600 mb-1.5">New</span>
+               </div>
+            </div>
+          </div>
+        </div>
+
         {/* Settings Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
            <div className="p-4 bg-slate-50 border-b border-slate-100">
@@ -106,7 +151,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <button className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-100 rounded-lg"><Edit className="w-4 h-4 text-slate-600" /></div>
-                    <span className="text-slate-700 font-medium">Edit Profile</span>
+                    <span className="text-slate-700 font-medium text-sm">Edit Profile Story</span>
                  </div>
                  <ArrowRight className="w-4 h-4 text-slate-400" />
               </button>
@@ -114,7 +159,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <button onClick={() => onNavigate('pricing')} className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-100 rounded-lg"><Crown className="w-4 h-4 text-slate-600" /></div>
-                    <span className="text-slate-700 font-medium">Manage Subscription</span>
+                    <span className="text-slate-700 font-medium text-sm">Covenant Subscription</span>
                  </div>
                  <ArrowRight className="w-4 h-4 text-slate-400" />
               </button>
@@ -122,7 +167,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <button className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-100 rounded-lg"><MapPin className="w-4 h-4 text-slate-600" /></div>
-                    <span className="text-slate-700 font-medium">Discovery Settings</span>
+                    <span className="text-slate-700 font-medium text-sm">Location Visibility</span>
                  </div>
                  <ArrowRight className="w-4 h-4 text-slate-400" />
               </button>
@@ -131,8 +176,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-100 rounded-lg"><Lock className="w-4 h-4 text-slate-600" /></div>
                     <div className="text-left">
-                       <span className="text-slate-700 font-medium block">Incognito Mode</span>
-                       {subscription !== 'ultimate' && <span className="text-xs text-gold-600 font-medium">Premium Feature</span>}
+                       <span className="text-slate-700 font-medium text-sm block">Incognito Mode</span>
+                       {subscription !== 'ultimate' && <span className="text-[10px] text-gold-600 font-black uppercase tracking-tighter">Premium Only</span>}
                     </div>
                  </div>
                  <button 
@@ -146,7 +191,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <button className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-100 rounded-lg"><Shield className="w-4 h-4 text-slate-600" /></div>
-                    <span className="text-slate-700 font-medium">Privacy & Safety</span>
+                    <span className="text-slate-700 font-medium text-sm">Security & Support</span>
                  </div>
                  <ArrowRight className="w-4 h-4 text-slate-400" />
               </button>
@@ -154,10 +199,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
         </div>
 
         <div className="mt-8 mb-12 flex flex-col items-center">
-           <button onClick={() => onNavigate('home')} className="flex items-center gap-2 text-red-500 font-bold hover:text-red-600 transition-colors px-6 py-2 rounded-xl hover:bg-red-50">
-              <LogOut className="w-4 h-4" /> Log Out
+           <button onClick={() => onNavigate('home')} className="flex items-center gap-2 text-red-500 font-bold hover:text-red-600 transition-colors px-6 py-2 rounded-xl hover:bg-red-50 text-sm">
+              <LogOut className="w-4 h-4" /> End Session
            </button>
-           <p className="text-xs text-slate-400 mt-4">Version 2.0.1 (Web)</p>
+           <p className="text-xs text-slate-400 mt-4 font-medium tracking-tight">Covenant Cloud • Build 2.4.0</p>
         </div>
       </div>
     </div>

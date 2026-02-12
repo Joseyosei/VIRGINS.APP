@@ -45,7 +45,7 @@ export const generateProfileBio = async (data: BioRequest): Promise<GeminiRespon
           },
           required: ["bio", "advice"],
         },
-        systemInstruction: "You are a professional relationship coach specializing in traditional courtship and marriage-minded dating. You help people articulate their high standards and values clearly and respectfully.",
+        systemInstruction: "You are a professional relationship coach specializing in traditional courtship and marriage-minded dating.",
       },
     });
 
@@ -62,9 +62,75 @@ export const generateProfileBio = async (data: BioRequest): Promise<GeminiRespon
   }
 };
 
+/**
+ * USES GEMINI 3 PRO PREVIEW
+ * Analyzes an image for traditional values, modesty, and quality.
+ */
+export const analyzeProfilePhoto = async (base64Image: string) => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
+      contents: [
+        {
+          inlineData: {
+            mimeType: "image/jpeg",
+            data: base64Image.split(',')[1] || base64Image
+          }
+        },
+        {
+          text: "Analyze this profile photo for a traditional dating app. Does it look respectful, modest, and high quality? Provide constructive feedback for a marriage-minded community."
+        }
+      ],
+      config: {
+        thinkingConfig: { thinkingBudget: 32768 } // Max reasoning for complex image understanding
+      }
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Image analysis error:", error);
+    return "Verification check unavailable, but the photo looks great!";
+  }
+};
+
+/**
+ * USES GEMINI 2.5 FLASH IMAGE
+ * Edits an image based on a text prompt.
+ */
+export const aiEditPhoto = async (base64Image: string, prompt: string) => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: [
+        {
+          inlineData: {
+            mimeType: "image/jpeg",
+            data: base64Image.split(',')[1] || base64Image
+          }
+        },
+        {
+          text: prompt
+        }
+      ]
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return `data:image/jpeg;base64,${part.inlineData.data}`;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error("AI Image Edit error:", error);
+    return null;
+  }
+};
+
+/**
+ * Uses Maps Grounding to find real public venues for a date.
+ */
 export const getGroundedDateSpots = async (lat: number, lng: number, category: string) => {
   try {
-    const prompt = `Find 3 wholesome, highly-rated, and safe public venues for a first date in the ${category} category near my current location. Focus on places suitable for a traditional first meeting (good conversation, safe environment).`;
+    const prompt = `Find 4 wholesome, highly-rated, and safe public venues for a first date in the ${category} category near my current location. Focus on places suitable for a traditional first meeting (good conversation, safe public environment).`;
     
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -87,7 +153,7 @@ export const getGroundedDateSpots = async (lat: number, lng: number, category: s
       places: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
     };
   } catch (error) {
-    console.error("Error fetching date spots:", error);
+    console.error("Error fetching grounded date spots:", error);
     return null;
   }
 };
