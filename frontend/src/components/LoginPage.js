@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
-import { auth, signInWithEmailAndPassword, sendPasswordResetEmail } from '../lib/firebase';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginPage({ onNavigate }) {
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -13,30 +14,12 @@ export default function LoginPage({ onNavigate }) {
     setLoading(true);
     setError('');
     try {
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      await login(formData.email, formData.password);
       onNavigate('matchmaker');
     } catch (err) {
-      const msg = err.code === 'auth/invalid-credential' ? 'Invalid email or password.'
-        : err.code === 'auth/user-not-found' ? 'No account found with this email.'
-        : err.code === 'auth/too-many-requests' ? 'Too many attempts. Please try again later.'
-        : 'Login failed. Please try again.';
-      setError(msg);
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      setError('Enter your email first, then click Forgot.');
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, formData.email);
-      setError('');
-      alert('Password reset email sent! Check your inbox.');
-    } catch {
-      setError('Could not send reset email. Check your email address.');
     }
   };
 
@@ -72,10 +55,7 @@ export default function LoginPage({ onNavigate }) {
             </div>
 
             <div>
-              <div className="flex justify-between mb-2 ml-1">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Password</label>
-                <button type="button" data-testid="forgot-password-btn" onClick={handleForgotPassword} className="text-xs font-bold text-gold-600 hover:text-gold-700">Forgot?</button>
-              </div>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-slate-400" />

@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, onAuthStateChanged, firebaseSignOut } from '../lib/firebase';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext(null);
 
@@ -17,52 +16,77 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        try {
-          const res = await fetch(`${API}/api/users/me`, {
-            headers: { 'x-firebase-uid': firebaseUser.uid },
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setProfile(data);
-          }
-        } catch (e) {
-          console.error('Failed to fetch profile:', e);
-        }
-      } else {
-        setUser(null);
-        setProfile(null);
+    const saved = localStorage.getItem('virgins_auth');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setUser({ uid: parsed.uid, email: parsed.email, displayName: parsed.name || '' });
+        fetchProfile(parsed.uid).then(p => { if (p) setProfile(p); });
+      } catch (e) {
+        localStorage.removeItem('virgins_auth');
       }
-      setLoading(false);
-    });
-    return unsub;
+    }
+    setLoading(false);
   }, []);
 
+  const fetchProfile = async (uid) => {
+    try {
+      const res = await fetch(`${API}/api/users/me`, {
+        headers: { 'x-firebase-uid': uid },
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.error('Failed to fetch profile:', e);
+    }
+    return null;
+  };
+
+  const signup = async (name, email, password) => {
+    const res = await fetch(`${API}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Signup failed');
+
+    const authData = { uid: data.uid, email, name, token: data.token };
+    localStorage.setItem('virgins_auth', JSON.stringify(authData));
+    setUser({ uid: data.uid, email, displayName: name });
+    if (data.user) setProfile(data.user);
+    return data;
+  };
+
+  const login = async (email, password) => {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Login failed');
+
+    const authData = { uid: data.uid, email, name: data.user?.name || '', token: data.token };
+    localStorage.setItem('virgins_auth', JSON.stringify(authData));
+    setUser({ uid: data.uid, email, displayName: data.user?.name || '' });
+    if (data.user) setProfile(data.user);
+    return data;
+  };
+
   const logout = async () => {
-    await firebaseSignOut(auth);
+    localStorage.removeItem('virgins_auth');
     setUser(null);
     setProfile(null);
   };
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (!user) return;
-    try {
-      const res = await fetch(`${API}/api/users/me`, {
-        headers: { 'x-firebase-uid': user.uid },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-      }
-    } catch (e) {
-      console.error('Failed to refresh profile:', e);
-    }
-  };
+    const p = await fetchProfile(user.uid);
+    if (p) setProfile(p);
+  }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signup, login, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

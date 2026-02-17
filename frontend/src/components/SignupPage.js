@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Mail, User, Lock, Loader2, ArrowRight, CheckCircle, Eye, EyeOff } from 'lucide-react';
-import { auth, createUserWithEmailAndPassword, updateProfile } from '../lib/firebase';
-
-const API = process.env.REACT_APP_BACKEND_URL;
+import { useAuth } from '../contexts/AuthContext';
 
 export default function SignupPage({ onNavigate }) {
+  const { signup } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -16,28 +15,17 @@ export default function SignupPage({ onNavigate }) {
       setError('Password must be at least 6 characters.');
       return;
     }
+    if (!formData.name.trim()) {
+      setError('Please enter your name.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      const cred = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      await updateProfile(cred.user, { displayName: formData.name });
-      await fetch(`${API}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firebaseUid: cred.user.uid,
-          email: formData.email,
-          name: formData.name,
-        }),
-      });
-      sessionStorage.setItem('virgins_temp_email', formData.email);
+      await signup(formData.name, formData.email, formData.password);
       onNavigate('waitlist');
     } catch (err) {
-      const msg = err.code === 'auth/email-already-in-use' ? 'This email is already registered. Try signing in.'
-        : err.code === 'auth/weak-password' ? 'Password is too weak. Use at least 6 characters.'
-        : err.code === 'auth/invalid-email' ? 'Please enter a valid email address.'
-        : 'Registration failed. Please try again.';
-      setError(msg);
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -115,7 +103,7 @@ export default function SignupPage({ onNavigate }) {
             </p>
           </div>
           <p className="mt-12 text-[10px] text-slate-400 text-center leading-relaxed">
-            By joining, you agree to our <span className="underline">Terms of Service</span> and <span className="underline">Privacy Policy</span>, and commit to upholding our community guidelines on purity and traditional courtship.
+            By joining, you agree to our <span className="underline cursor-pointer">Terms of Service</span> and <span className="underline cursor-pointer">Privacy Policy</span>, and commit to upholding our community guidelines on purity and traditional courtship.
           </p>
         </div>
       </div>
