@@ -200,6 +200,128 @@ class VirginsDatingAPITester:
         
         return success
 
+    def test_signup_endpoint(self):
+        """Test new backend signup endpoint"""
+        # Test with new user email to avoid 409 conflict
+        timestamp = datetime.now().strftime('%H%M%S')
+        signup_data = {
+            "name": "Test User",
+            "email": f"testuser{timestamp}@example.com",
+            "password": "testpass123"
+        }
+        
+        success, response = self.run_test(
+            "Backend Signup - New User",
+            "POST",
+            "api/auth/signup",
+            200,
+            None,
+            signup_data
+        )
+        
+        if success and response.get('token') and response.get('uid'):
+            self.log_test("Signup Token/UID Validation", True, 
+                         f"Received token and uid: {response.get('uid')}")
+            # Store for later use
+            self.test_uid = response.get('uid')
+            self.test_token = response.get('token')
+            self.test_email = signup_data['email']
+        else:
+            self.log_test("Signup Token/UID Validation", False,
+                         "Token or uid missing from signup response")
+        
+        return success
+
+    def test_duplicate_signup(self):
+        """Test duplicate signup handling"""
+        # Use existing test credentials
+        duplicate_data = {
+            "name": "Mary Grace",
+            "email": "marygrace@example.com",
+            "password": "grace123"
+        }
+        
+        success, response = self.run_test(
+            "Backend Signup - Duplicate Email (Should Fail)",
+            "POST", 
+            "api/auth/signup",
+            409,
+            None,
+            duplicate_data
+        )
+        
+        return success
+
+    def test_login_endpoint(self):
+        """Test backend login endpoint with existing credentials"""
+        login_data = {
+            "email": "marygrace@example.com",
+            "password": "grace123"
+        }
+        
+        success, response = self.run_test(
+            "Backend Login - Existing User",
+            "POST",
+            "api/auth/login", 
+            200,
+            None,
+            login_data
+        )
+        
+        if success and response.get('token') and response.get('uid'):
+            self.log_test("Login Token/UID Validation", True,
+                         f"Received token and uid: {response.get('uid')}")
+            # Store credentials for authenticated tests
+            self.mary_uid = response.get('uid')
+            self.mary_token = response.get('token')
+        else:
+            self.log_test("Login Token/UID Validation", False,
+                         "Token or uid missing from login response")
+        
+        return success
+
+    def test_wrong_password_login(self):
+        """Test login with wrong password"""
+        wrong_data = {
+            "email": "marygrace@example.com", 
+            "password": "wrongpassword"
+        }
+        
+        success, response = self.run_test(
+            "Backend Login - Wrong Password (Should Fail)",
+            "POST",
+            "api/auth/login",
+            401,
+            None,
+            wrong_data
+        )
+        
+        return success
+
+    def test_user_profile_endpoint(self):
+        """Test getting user profile with auth header"""
+        if not hasattr(self, 'mary_uid'):
+            self.log_test("User Profile Test", False, "No authenticated user available")
+            return False
+            
+        headers = {'x-firebase-uid': self.mary_uid}
+        success, response = self.run_test(
+            "Get User Profile - Authenticated",
+            "GET",
+            "api/users/me",
+            200,
+            headers
+        )
+        
+        if success and response.get('email') == 'marygrace@example.com':
+            self.log_test("Profile Data Validation", True,
+                         f"Retrieved profile for {response.get('email')}")
+        else:
+            self.log_test("Profile Data Validation", False,
+                         "Profile email mismatch or missing")
+        
+        return success
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting VIRGINS Dating App Backend Tests")
