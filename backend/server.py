@@ -350,7 +350,7 @@ async def login_with_password(data: dict):
 @app.get("/api/users/me")
 async def get_my_profile(request: Request):
     uid = get_uid(request)
-    user = await users_col.find_one({"firebaseUid": uid}, {"_id": 0})
+    user = await users_col.find_one({"firebaseUid": uid}, {"_id": 0, "passwordHash": 0})
     if not user:
         raise HTTPException(404, "User not found")
     return user
