@@ -24,8 +24,14 @@ export default function UserProfile({ onNavigate }) {
         location: profile.location || '',
         hometown: profile.hometown || '',
       });
+      setPhotos(profile.photos || []);
     }
   }, [profile]);
+
+  const handlePhotosChange = async (newPhotos) => {
+    setPhotos(newPhotos);
+    await refreshProfile();
+  };
 
   const handleSave = async () => {
     if (!user) return;
