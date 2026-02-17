@@ -663,3 +663,155 @@ async def admin_stats():
         "totalLikes": like_count,
         "totalMatches": match_count,
     }
+
+
+# ---------- GEOLOCATION HELPERS ----------
+def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate distance between two coordinates in kilometers using Haversine formula"""
+    R = 6371  # Earth's radius in kilometers
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    return R * c
+
+
+# ---------- NEARBY / GEOLOCATION ----------
+@app.post("/api/users/nearby")
+async def get_nearby_users(request: Request, data: dict):
+    """Find nearby users using MongoDB geospatial queries"""
+    uid = get_uid(request)
+    latitude = data.get("latitude")
+    longitude = data.get("longitude")
+    max_distance = data.get("maxDistance", 50000)  # Default 50km in meters
+    limit = data.get("limit", 20)
+
+    if latitude is None or longitude is None:
+        raise HTTPException(400, "latitude and longitude required")
+
+    # Find users with geospatial query
+    nearby_users = await users_col.find(
+        {
+            "firebaseUid": {"$ne": uid},
+            "coordinates": {
+                "$near": {
+                    "$geometry": {
+                        "type": "Point",
+                        "coordinates": [longitude, latitude]
+                    },
+                    "$maxDistance": max_distance
+                }
+            }
+        },
+        {"_id": 0, "passwordHash": 0}
+    ).limit(limit).to_list(limit)
+
+    # Calculate distance for each user
+    for user in nearby_users:
+        if user.get("coordinates"):
+            coords = user["coordinates"]["coordinates"]
+            dist_km = calculate_distance(latitude, longitude, coords[1], coords[0])
+            user["distance"] = round(dist_km, 1)
+        else:
+            user["distance"] = None
+
+    return nearby_users
+
+
+@app.put("/api/users/me/location")
+async def update_user_location(request: Request, data: dict):
+    """Update user's current location coordinates"""
+    uid = get_uid(request)
+    latitude = data.get("latitude")
+    longitude = data.get("longitude")
+
+    if latitude is None or longitude is None:
+        raise HTTPException(400, "latitude and longitude required")
+
+    coordinates = {
+        "type": "Point",
+        "coordinates": [longitude, latitude]
+    }
+
+    result = await users_col.update_one(
+        {"firebaseUid": uid},
+        {"$set": {"coordinates": coordinates, "lastLocationUpdate": datetime.now(timezone.utc).isoformat()}}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(404, "User not found")
+
+    return {"message": "Location updated", "coordinates": coordinates}
+
+
+# ---------- GOOGLE PLACES API ----------
+@app.get("/api/venues/nearby")
+async def get_nearby_venues(
+    latitude: float = Query(...),
+    longitude: float = Query(...),
+    radius: int = Query(default=1500),
+    place_types: str = Query(default="restaurant,cafe,park,church")
+):
+    """Search for nearby date-friendly venues using Google Places API"""
+    if not GOOGLE_MAPS_API_KEY:
+        raise HTTPException(500, "Google Maps API key not configured")
+
+    types_list = [t.strip() for t in place_types.split(",")]
+    
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.photos,places.websiteUri,places.primaryType"
+    }
+
+    payload = {
+        "includedTypes": types_list,
+        "maxResultCount": 20,
+        "locationRestriction": {
+            "circle": {
+                "center": {
+                    "latitude": latitude,
+                    "longitude": longitude
+                },
+                "radius": float(radius)
+            }
+        },
+        "rankPreference": "DISTANCE"
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://places.googleapis.com/v1/places:searchNearby",
+            json=payload,
+            headers=headers,
+            timeout=10.0
+        )
+
+        if response.status_code != 200:
+            # Fallback to mock venues if Places API fails
+            return {
+                "places": [
+                    {"id": "1", "displayName": {"text": "Grace Fellowship Cafe"}, "formattedAddress": "123 Faith St", "location": {"latitude": latitude + 0.005, "longitude": longitude + 0.003}, "types": ["cafe"], "rating": 4.8},
+                    {"id": "2", "displayName": {"text": "Covenant Garden Park"}, "formattedAddress": "456 Peace Ave", "location": {"latitude": latitude - 0.003, "longitude": longitude + 0.007}, "types": ["park"], "rating": 4.6},
+                    {"id": "3", "displayName": {"text": "The Bethany Bistro"}, "formattedAddress": "789 Hope Blvd", "location": {"latitude": latitude + 0.008, "longitude": longitude - 0.004}, "types": ["restaurant"], "rating": 4.9},
+                ],
+                "source": "mock"
+            }
+
+        data = response.json()
+        venues = []
+        for place in data.get("places", []):
+            venue = {
+                "id": place.get("id"),
+                "displayName": place.get("displayName", {}),
+                "formattedAddress": place.get("formattedAddress"),
+                "location": place.get("location", {}),
+                "types": place.get("types", []),
+                "rating": place.get("rating"),
+                "primaryType": place.get("primaryType"),
+                "websiteUri": place.get("websiteUri")
+            }
+            venues.append(venue)
+
+        return {"places": venues, "source": "google"}
+
