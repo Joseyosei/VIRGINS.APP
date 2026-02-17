@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Crown, Star, Gem, ArrowRight, Shield, Edit, MapPin, Eye, Heart, Users, LogOut, Sparkles, Check, Briefcase, GraduationCap, Ruler, Dumbbell, Home, Church, X, Loader2, Save } from 'lucide-react';
+import { Crown, Star, Gem, ArrowRight, Shield, Edit, MapPin, Eye, Heart, Users, LogOut, Sparkles, Check, Briefcase, GraduationCap, Ruler, Dumbbell, Home, Church, X, Loader2, Save, Camera, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { SinglePhotoUploader } from './PhotoUploader';
+import PhotoUploader from './PhotoUploader';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
