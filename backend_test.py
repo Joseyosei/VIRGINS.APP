@@ -324,14 +324,19 @@ class VirginsDatingAPITester:
 
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting VIRGINS Dating App Backend Tests")
+        print("🚀 Starting VIRGINS Dating App Backend Tests - Auth Focus")
         print("=" * 60)
         print()
         
-        # Test in sequence for dependencies
+        # Test in sequence for dependencies, focusing on auth endpoints
         tests = [
             self.test_health_check,
             self.test_admin_stats,
+            self.test_signup_endpoint,
+            self.test_duplicate_signup,
+            self.test_login_endpoint,
+            self.test_wrong_password_login,
+            self.test_user_profile_endpoint,
             self.test_discover_endpoint,
             self.test_like_functionality,
             self.test_matches_endpoint,
