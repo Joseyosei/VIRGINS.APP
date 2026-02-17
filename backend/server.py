@@ -815,3 +815,257 @@ async def get_nearby_venues(
 
         return {"places": venues, "source": "google"}
 
+
+# ---------- STRIPE PAYMENTS ----------
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+
+STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
+
+# Define membership packages (amounts in dollars)
+MEMBERSHIP_PACKAGES = {
+    "monthly": {"amount": 9.99, "name": "Monthly Premium", "description": "1 month of premium features"},
+    "annual": {"amount": 79.99, "name": "Annual Premium (Save 33%)", "description": "12 months of premium features"},
+    "lifetime": {"amount": 199.99, "name": "Lifetime Premium", "description": "Permanent premium access"},
+}
+
+payments_col = db["payment_transactions"]
+
+
+@app.post("/api/payments/create-checkout")
+async def create_checkout_session(request: Request, data: dict):
+    """Create a Stripe checkout session for membership"""
+    uid = get_uid(request)
+    package_id = data.get("packageId")
+    origin_url = data.get("originUrl", "")
+
+    if not STRIPE_API_KEY:
+        raise HTTPException(500, "Stripe is not configured")
+
+    if package_id not in MEMBERSHIP_PACKAGES:
+        raise HTTPException(400, f"Invalid package. Valid options: {list(MEMBERSHIP_PACKAGES.keys())}")
+
+    package = MEMBERSHIP_PACKAGES[package_id]
+    amount = package["amount"]
+
+    # Build success and cancel URLs
+    success_url = f"{origin_url}/membership?session_id={{CHECKOUT_SESSION_ID}}&status=success"
+    cancel_url = f"{origin_url}/membership?status=cancelled"
+
+    # Initialize Stripe checkout
+    webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    try:
+        checkout_request = CheckoutSessionRequest(
+            amount=float(amount),
+            currency="usd",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "user_id": uid,
+                "package_id": package_id,
+                "package_name": package["name"],
+            }
+        )
+
+        session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
+
+        # Create payment transaction record
+        now = datetime.now(timezone.utc).isoformat()
+        await payments_col.insert_one({
+            "sessionId": session.session_id,
+            "userId": uid,
+            "packageId": package_id,
+            "packageName": package["name"],
+            "amount": amount,
+            "currency": "usd",
+            "status": "pending",
+            "paymentStatus": "initiated",
+            "createdAt": now,
+        })
+
+        return {
+            "url": session.url,
+            "sessionId": session.session_id,
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Failed to create checkout session: {str(e)}")
+
+
+@app.get("/api/payments/status/{session_id}")
+async def get_payment_status(session_id: str, request: Request):
+    """Get the status of a payment session"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(500, "Stripe is not configured")
+
+    webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    try:
+        status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+
+        # Update transaction in database
+        now = datetime.now(timezone.utc).isoformat()
+        update_data = {
+            "status": status.status,
+            "paymentStatus": status.payment_status,
+            "updatedAt": now,
+        }
+
+        # If payment successful, update user to premium
+        if status.payment_status == "paid":
+            transaction = await payments_col.find_one({"sessionId": session_id})
+            if transaction and not transaction.get("processed"):
+                user_id = transaction.get("userId")
+                package_id = transaction.get("packageId")
+
+                # Mark transaction as processed to prevent double processing
+                update_data["processed"] = True
+
+                # Update user's premium status
+                await users_col.update_one(
+                    {"firebaseUid": user_id},
+                    {"$set": {
+                        "isPremium": True,
+                        "premiumPackage": package_id,
+                        "premiumStartDate": now,
+                        "premiumUpdatedAt": now,
+                    }}
+                )
+
+        await payments_col.update_one(
+            {"sessionId": session_id},
+            {"$set": update_data}
+        )
+
+        return {
+            "status": status.status,
+            "paymentStatus": status.payment_status,
+            "amountTotal": status.amount_total,
+            "currency": status.currency,
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Failed to get payment status: {str(e)}")
+
+
+@app.post("/api/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(500, "Stripe is not configured")
+
+    body = await request.body()
+    signature = request.headers.get("Stripe-Signature")
+
+    webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+
+        # Update transaction based on webhook event
+        if webhook_response.session_id:
+            now = datetime.now(timezone.utc).isoformat()
+            await payments_col.update_one(
+                {"sessionId": webhook_response.session_id},
+                {"$set": {
+                    "status": webhook_response.event_type,
+                    "paymentStatus": webhook_response.payment_status,
+                    "webhookEventId": webhook_response.event_id,
+                    "updatedAt": now,
+                }}
+            )
+
+            # If payment completed, update user premium status
+            if webhook_response.payment_status == "paid":
+                transaction = await payments_col.find_one({"sessionId": webhook_response.session_id})
+                if transaction and not transaction.get("processed"):
+                    user_id = transaction.get("userId")
+                    package_id = transaction.get("packageId")
+
+                    await payments_col.update_one(
+                        {"sessionId": webhook_response.session_id},
+                        {"$set": {"processed": True}}
+                    )
+
+                    await users_col.update_one(
+                        {"firebaseUid": user_id},
+                        {"$set": {
+                            "isPremium": True,
+                            "premiumPackage": package_id,
+                            "premiumStartDate": now,
+                            "premiumUpdatedAt": now,
+                        }}
+                    )
+
+        return {"received": True}
+    except Exception as e:
+        raise HTTPException(400, f"Webhook error: {str(e)}")
+
+
+@app.get("/api/payments/packages")
+async def get_membership_packages():
+    """Get available membership packages"""
+    return {"packages": MEMBERSHIP_PACKAGES}
+
+
+# ---------- ACCOUNT MANAGEMENT ----------
+@app.post("/api/account/cancel-membership")
+async def cancel_membership(request: Request):
+    """Cancel user's premium membership"""
+    uid = get_uid(request)
+
+    result = await users_col.update_one(
+        {"firebaseUid": uid},
+        {"$set": {
+            "isPremium": False,
+            "premiumCancelledAt": datetime.now(timezone.utc).isoformat(),
+        }}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(404, "User not found")
+
+    return {"message": "Membership cancelled successfully"}
+
+
+@app.delete("/api/account/delete")
+async def delete_account(request: Request):
+    """Permanently delete user account and all associated data"""
+    uid = get_uid(request)
+
+    # Delete user's likes
+    await likes_col.delete_many({"$or": [{"fromUserId": uid}, {"toUserId": uid}]})
+
+    # Delete user's matches
+    await matches_col.delete_many({"users": uid})
+
+    # Delete user's payment transactions
+    await payments_col.delete_many({"userId": uid})
+
+    # Delete user account
+    result = await users_col.delete_one({"firebaseUid": uid})
+
+    if result.deleted_count == 0:
+        raise HTTPException(404, "User not found")
+
+    return {"message": "Account deleted successfully"}
+
+
+@app.get("/api/account/membership")
+async def get_membership_status(request: Request):
+    """Get user's membership status"""
+    uid = get_uid(request)
+
+    user = await users_col.find_one({"firebaseUid": uid}, {"_id": 0})
+    if not user:
+        raise HTTPException(404, "User not found")
+
+    return {
+        "isPremium": user.get("isPremium", False),
+        "premiumPackage": user.get("premiumPackage"),
+        "premiumStartDate": user.get("premiumStartDate"),
+        "premiumCancelledAt": user.get("premiumCancelledAt"),
+    }
+
+
