@@ -271,6 +271,82 @@ async def register_user(data: dict):
     return {"message": "User created", "user": serialize_doc(user)}
 
 
+# ---------- BACKEND AUTH (fallback when Firebase not configured) ----------
+@app.post("/api/auth/signup")
+async def signup_with_password(data: dict):
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+    name = data.get("name", "")
+
+    if not email or not password:
+        raise HTTPException(400, "Email and password required")
+    if len(password) < 6:
+        raise HTTPException(400, "Password must be at least 6 characters")
+
+    existing = await users_col.find_one({"email": email})
+    if existing:
+        raise HTTPException(409, "An account with this email already exists. Try signing in.")
+
+    uid = f"local_{uuid.uuid4().hex[:16]}"
+    hashed_pw = pwd_context.hash(password)
+    now = datetime.now(timezone.utc).isoformat()
+
+    user = {
+        "firebaseUid": uid,
+        "email": email,
+        "passwordHash": hashed_pw,
+        "name": name,
+        "age": 0,
+        "gender": "",
+        "location": "",
+        "faith": "Christian",
+        "faithLevel": "Exploring",
+        "denomination": "",
+        "values": [],
+        "intention": "Unsure",
+        "lifestyle": "Moderate",
+        "bio": "",
+        "photos": [],
+        "profileImage": "",
+        "status": "pending",
+        "isPremium": False,
+        "createdAt": now,
+    }
+    await users_col.insert_one(user)
+
+    token = jwt.encode({"uid": uid, "email": email}, JWT_SECRET, algorithm="HS256")
+    safe_user = serialize_doc(user)
+    if safe_user and "passwordHash" in safe_user:
+        del safe_user["passwordHash"]
+
+    return {"message": "Account created", "token": token, "uid": uid, "user": safe_user}
+
+
+@app.post("/api/auth/login")
+async def login_with_password(data: dict):
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+
+    if not email or not password:
+        raise HTTPException(400, "Email and password required")
+
+    user = await users_col.find_one({"email": email})
+    if not user:
+        raise HTTPException(401, "Invalid email or password")
+
+    stored_hash = user.get("passwordHash", "")
+    if not stored_hash or not pwd_context.verify(password, stored_hash):
+        raise HTTPException(401, "Invalid email or password")
+
+    uid = user.get("firebaseUid")
+    token = jwt.encode({"uid": uid, "email": email}, JWT_SECRET, algorithm="HS256")
+    safe_user = serialize_doc(user)
+    if safe_user and "passwordHash" in safe_user:
+        del safe_user["passwordHash"]
+
+    return {"message": "Login successful", "token": token, "uid": uid, "user": safe_user}
+
+
 @app.get("/api/users/me")
 async def get_my_profile(request: Request):
     uid = get_uid(request)
