@@ -11,6 +11,7 @@ export default function UserProfile({ onNavigate }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editData, setEditData] = useState({});
+  const [photos, setPhotos] = useState([]);
 
   useEffect(() => {
     if (profile) {
