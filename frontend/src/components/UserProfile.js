@@ -81,10 +81,12 @@ export default function UserProfile({ onNavigate }) {
           <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-navy-800 to-transparent opacity-50" />
           <div className="relative z-10 p-8 flex flex-col items-center">
             <div className="relative mb-4">
-              <img src={displayImage} alt="Profile" className="w-28 h-28 rounded-full border-4 border-gold-500 shadow-2xl object-cover" />
-              <button className="absolute bottom-0 right-0 bg-gold-500 p-2 rounded-full text-navy-900 hover:bg-gold-400 transition-colors shadow-lg">
-                <Edit className="w-4 h-4" />
-              </button>
+              <SinglePhotoUploader
+                currentPhoto={displayImage}
+                onPhotoChange={async () => {
+                  await refreshProfile();
+                }}
+              />
             </div>
             <h1 className="text-2xl font-bold text-white font-serif">{displayName}{displayAge ? `, ${displayAge}` : ''}</h1>
             <p className="text-slate-400 text-sm flex items-center gap-1 mt-1">
