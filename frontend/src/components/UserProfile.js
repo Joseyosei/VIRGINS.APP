@@ -183,6 +183,24 @@ export default function UserProfile({ onNavigate }) {
           )}
         </div>
 
+        {/* Photo Gallery */}
+        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden mb-6">
+          <div className="p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <ImageIcon size={14} className="text-navy-900" /> Photo Gallery
+            </h3>
+            <span className="text-xs text-slate-400">{photos.length}/6 photos</span>
+          </div>
+          <div className="p-5">
+            <PhotoUploader
+              photos={photos}
+              maxPhotos={6}
+              onPhotosChange={handlePhotosChange}
+              showMainPhotoLabel={true}
+            />
+          </div>
+        </div>
+
         {/* Account Settings */}
         <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden mb-6">
           <div className="p-5 bg-slate-50 border-b border-slate-100">
