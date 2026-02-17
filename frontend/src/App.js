@@ -10,7 +10,7 @@ import AIProfileHelper from './components/AIProfileHelper';
 import Testimonials from './components/Testimonials';
 import DownloadSection from './components/DownloadSection';
 import Footer from './components/Footer';
-import WaitlistPage from './components/WaitlistPage';
+import WaitlistPage from './components/OnboardingFlow';
 import MatchmakerDemo from './components/MatchmakerDemo';
 import AdminDashboard from './components/AdminDashboard';
 import UserProfile from './components/UserProfile';
