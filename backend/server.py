@@ -210,6 +210,7 @@ def serialize_docs(docs):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await users_col.create_index("firebaseUid", unique=True)
+    await users_col.create_index([("coordinates", "2dsphere")])  # Geospatial index
     await likes_col.create_index([("fromUserId", 1), ("toUserId", 1)], unique=True)
     await matches_col.create_index("users")
     count = await users_col.count_documents({})
