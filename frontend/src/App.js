@@ -20,6 +20,7 @@ import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import SplashIntro from './components/SplashIntro';
 import LikesScreen from './components/LikesScreen';
+import MembershipPage from './components/MembershipPage';
 import { HowItWorks, Pricing } from './components/ProductPages';
 import { About, Careers, Press, Contact, Privacy, Terms, Cookies, Safety } from './components/StaticPages';
 
