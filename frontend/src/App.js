@@ -36,7 +36,7 @@ function AppInner() {
   const handleSplashComplete = () => {
     sessionStorage.setItem('virgins_splash_seen', 'true');
     setShowSplash(false);
-    setCurrentPage(user ? 'matchmaker' : 'login');
+    setCurrentPage(user ? 'matchmaker' : 'home');
   };
 
   const renderPage = () => {
