@@ -38,6 +38,7 @@ MOCK_USERS = [
         "age": 24,
         "gender": "Female",
         "location": "Austin, TX",
+        "coordinates": {"type": "Point", "coordinates": [-97.7431, 30.2672]},  # Austin, TX
         "faith": "Christian",
         "faithLevel": "Very Serious",
         "denomination": "Baptist",
@@ -57,6 +58,7 @@ MOCK_USERS = [
         "age": 26,
         "gender": "Female",
         "location": "Dallas, TX",
+        "coordinates": {"type": "Point", "coordinates": [-96.7970, 32.7767]},  # Dallas, TX
         "faith": "Christian",
         "faithLevel": "Practicing",
         "denomination": "Non-Denominational",
@@ -76,6 +78,7 @@ MOCK_USERS = [
         "age": 23,
         "gender": "Female",
         "location": "Houston, TX",
+        "coordinates": {"type": "Point", "coordinates": [-95.3698, 29.7604]},  # Houston, TX
         "faith": "Catholic",
         "faithLevel": "Very Serious",
         "denomination": "Catholic",
@@ -95,6 +98,7 @@ MOCK_USERS = [
         "age": 27,
         "gender": "Male",
         "location": "Austin, TX",
+        "coordinates": {"type": "Point", "coordinates": [-97.7501, 30.2849]},  # Austin, TX (slightly different)
         "faith": "Christian",
         "faithLevel": "Very Serious",
         "denomination": "Reformed",
@@ -114,6 +118,7 @@ MOCK_USERS = [
         "age": 29,
         "gender": "Male",
         "location": "Dallas, TX",
+        "coordinates": {"type": "Point", "coordinates": [-96.8067, 32.7857]},  # Dallas, TX
         "faith": "Christian",
         "faithLevel": "Practicing",
         "denomination": "Methodist",
@@ -133,6 +138,7 @@ MOCK_USERS = [
         "age": 22,
         "gender": "Female",
         "location": "Nashville, TN",
+        "coordinates": {"type": "Point", "coordinates": [-86.7816, 36.1627]},  # Nashville, TN
         "faith": "Christian",
         "faithLevel": "Very Serious",
         "denomination": "Baptist",
@@ -152,6 +158,7 @@ MOCK_USERS = [
         "age": 25,
         "gender": "Female",
         "location": "Charlotte, NC",
+        "coordinates": {"type": "Point", "coordinates": [-80.8431, 35.2271]},  # Charlotte, NC
         "faith": "Christian",
         "faithLevel": "Practicing",
         "denomination": "Presbyterian",
@@ -171,6 +178,7 @@ MOCK_USERS = [
         "age": 28,
         "gender": "Male",
         "location": "Atlanta, GA",
+        "coordinates": {"type": "Point", "coordinates": [-84.3880, 33.7490]},  # Atlanta, GA
         "faith": "Christian",
         "faithLevel": "Very Serious",
         "denomination": "Non-Denominational",
