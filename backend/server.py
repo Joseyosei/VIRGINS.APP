@@ -21,6 +21,7 @@ load_dotenv()
 MONGO_URL = os.environ.get("MONGO_URL")
 DB_NAME = os.environ.get("DB_NAME", "virgins_db")
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
+GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "")
 
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
