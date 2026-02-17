@@ -357,19 +357,21 @@ export default function OnboardingFlow({ onNavigate }) {
         </div>
       </div>
 
-      {/* Fixed bottom next button (Bumble-style circle arrow) */}
+      {/* Fixed bottom next button - more visible, centered on mobile */}
       {step < TOTAL_STEPS && (
-        <div className="fixed bottom-8 right-8 z-40">
-          <button data-testid="onboard-next" onClick={goNext}
-            disabled={
-              (step === 1 && !formData.gender) ||
-              (step === 2 && !formData.age) ||
-              (step === 3 && !formData.denomination) ||
-              (step === 4 && !formData.intention)
-            }
-            className="w-16 h-16 bg-navy-900 rounded-full shadow-2xl flex items-center justify-center text-white hover:bg-navy-800 transition-all hover:scale-110 active:scale-90 disabled:opacity-30 disabled:hover:scale-100">
-            <ArrowRight size={24} />
-          </button>
+        <div className="fixed bottom-0 left-0 right-0 z-40 p-6 bg-gradient-to-t from-white via-white to-transparent">
+          <div className="max-w-lg mx-auto">
+            <button data-testid="onboard-next" onClick={goNext}
+              disabled={
+                (step === 1 && !formData.gender) ||
+                (step === 2 && !formData.age) ||
+                (step === 3 && !formData.denomination) ||
+                (step === 4 && !formData.intention)
+              }
+              className="w-full py-5 bg-navy-900 rounded-2xl shadow-2xl flex items-center justify-center gap-3 text-white font-bold text-lg hover:bg-navy-800 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed">
+              Continue <ArrowRight size={20} />
+            </button>
+          </div>
         </div>
       )}
     </div>
