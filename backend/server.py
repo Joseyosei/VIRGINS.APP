@@ -363,6 +363,9 @@ async def update_my_profile(request: Request, data: dict):
         "name", "age", "gender", "location", "faith", "faithLevel",
         "denomination", "values", "intention", "lifestyle", "bio",
         "photos", "profileImage", "status",
+        "birthday", "work", "education", "educationLevel", "height",
+        "exercise", "hometown", "lookingFor", "churchAttendance",
+        "showGenderOnProfile", "onboardingComplete",
     ]
     update = {k: v for k, v in data.items() if k in safe_fields}
     if not update:
