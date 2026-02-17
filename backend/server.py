@@ -6,8 +6,13 @@ from dotenv import load_dotenv
 from datetime import datetime, timezone
 from bson import ObjectId
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from passlib.context import CryptContext
+import jwt
 import os
 import uuid
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+JWT_SECRET = os.environ.get("JWT_SECRET", "virgins-app-secret-key-2024")
 
 load_dotenv()
 
