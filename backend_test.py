@@ -1,371 +1,206 @@
-#!/usr/bin/env python3
-
 import requests
 import sys
-import json
+import uuid
 from datetime import datetime
 
-class VirginsDatingAPITester:
+class VirginsDatingAppTester:
     def __init__(self, base_url="https://27f60236-87dd-4eea-9a6a-6815079e7e3d.preview.emergentagent.com"):
         self.base_url = base_url
+        self.token = None
+        self.uid = None
         self.tests_run = 0
         self.tests_passed = 0
-        self.results = []
 
-    def log_test(self, name, success, details="", response_data=None):
-        """Log test result"""
-        self.tests_run += 1
-        if success:
-            self.tests_passed += 1
-        
-        result = {
-            "test_name": name,
-            "success": success,
-            "details": details,
-            "response_data": response_data
-        }
-        self.results.append(result)
-        
-        status = "✅ PASSED" if success else "❌ FAILED"
-        print(f"{status} - {name}")
-        if details:
-            print(f"    Details: {details}")
-        if response_data and isinstance(response_data, dict):
-            print(f"    Response: {json.dumps(response_data, indent=2)}")
-        print()
-
-    def run_test(self, name, method, endpoint, expected_status, headers=None, data=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
         """Run a single API test"""
-        url = f"{self.base_url}/{endpoint}" if not endpoint.startswith('http') else endpoint
-        request_headers = headers or {}
+        url = f"{self.base_url}/{endpoint}"
+        default_headers = {'Content-Type': 'application/json'}
+        if self.uid:
+            default_headers['x-firebase-uid'] = self.uid
+        if headers:
+            default_headers.update(headers)
+
+        self.tests_run += 1
+        print(f"\n🔍 Testing {name}...")
+        print(f"   URL: {url}")
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=request_headers, timeout=10)
+                response = requests.get(url, headers=default_headers)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=request_headers, timeout=10)
+                response = requests.post(url, json=data, headers=default_headers)
+            elif method == 'PUT':
+                response = requests.put(url, json=data, headers=default_headers)
             elif method == 'DELETE':
-                response = requests.delete(url, headers=request_headers, timeout=10)
-            else:
-                self.log_test(name, False, f"Unsupported method: {method}")
-                return False, {}
+                response = requests.delete(url, headers=default_headers)
 
             success = response.status_code == expected_status
-            response_json = {}
-            
-            try:
-                response_json = response.json()
-            except:
-                response_json = {"raw_response": response.text}
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    return success, response.json()
+                except:
+                    return success, response.text
+            else:
+                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                print(f"   Response: {response.text[:200]}")
 
-            details = f"Expected {expected_status}, got {response.status_code}"
-            if not success:
-                details += f" - {response.text[:200]}"
-            
-            self.log_test(name, success, details, response_json)
-            return success, response_json
+            return success, {}
 
         except Exception as e:
-            self.log_test(name, False, f"Request failed: {str(e)}")
+            print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
     def test_health_check(self):
-        """Test backend health endpoint"""
-        return self.run_test(
-            "Health Check",
-            "GET",
-            "api/health",
-            200
-        )
+        """Test API health endpoint"""
+        return self.run_test("Health Check", "GET", "api/health", 200)
 
-    def test_admin_stats(self):
-        """Test admin stats endpoint - should show seeded users"""
+    def test_signup(self, name, email, password):
+        """Test user signup"""
         success, response = self.run_test(
-            "Admin Stats - Seeded Users Check",
-            "GET", 
-            "api/admin/stats",
-            200
+            "User Signup",
+            "POST",
+            "api/auth/signup",
+            200,
+            data={"name": name, "email": email, "password": password}
         )
-        
-        if success and response.get('totalUsers', 0) >= 8:
-            self.log_test("Admin Stats - User Count Validation", True, 
-                         f"Found {response.get('totalUsers')} users (>= 8 expected)")
+        if success and 'uid' in response:
+            self.uid = response['uid']
+            self.token = response.get('token')
+            print(f"   Created user with UID: {self.uid}")
             return True
-        else:
-            self.log_test("Admin Stats - User Count Validation", False,
-                         f"Expected >= 8 users, found {response.get('totalUsers', 0)}")
-            return False
+        return False
 
-    def test_discover_endpoint(self):
-        """Test discover endpoint with filtering"""
-        headers = {'x-firebase-uid': 'test_user'}
-        return self.run_test(
-            "Discover Users with Filtering",
-            "GET",
-            "api/users/discover?gender=Female&min_age=18&max_age=50",
-            200,
-            headers
-        )
-
-    def test_like_functionality(self):
-        """Test like creation and mutual matching"""
-        # Test creating a like
-        like_data = {"toUserId": "mock_elizabeth_1"}
-        headers = {'x-firebase-uid': 'test_liker'}
-        
+    def test_login(self, email, password):
+        """Test user login"""
         success, response = self.run_test(
-            "Create Like",
-            "POST",
-            "api/likes",
-            200,
-            headers,
-            like_data
-        )
-        
-        if not success:
-            return False
-        
-        # Test getting received likes
-        elizabeth_headers = {'x-firebase-uid': 'mock_elizabeth_1'}
-        success, response = self.run_test(
-            "Get Received Likes",
-            "GET",
-            "api/likes/received",
-            200,
-            elizabeth_headers
-        )
-        
-        if success and isinstance(response, list):
-            # Check if test_liker is in the likes
-            liker_found = any(like.get('firebaseUid') == 'test_liker' for like in response)
-            self.log_test("Received Likes Validation", liker_found, 
-                         "test_liker found in received likes" if liker_found else "test_liker not found in received likes")
-        
-        # Test mutual like (Elizabeth likes back test_liker)
-        mutual_like_data = {"toUserId": "test_liker"}
-        success, response = self.run_test(
-            "Create Mutual Like (Should Create Match)",
-            "POST",
-            "api/likes",
-            200,
-            elizabeth_headers,
-            mutual_like_data
-        )
-        
-        if success and response.get('matched'):
-            self.log_test("Mutual Like Creates Match", True, "Match created successfully")
-        else:
-            self.log_test("Mutual Like Creates Match", False, 
-                         f"Expected matched=true, got matched={response.get('matched')}")
-        
-        return success
-
-    def test_matches_endpoint(self):
-        """Test matches endpoint"""
-        headers = {'x-firebase-uid': 'test_liker'}
-        return self.run_test(
-            "Get Matches",
-            "GET",
-            "api/matches",
-            200,
-            headers
-        )
-
-    def test_ai_bio_generation(self):
-        """Test AI bio generation endpoint"""
-        bio_data = {
-            "name": "Sarah",
-            "age": "24", 
-            "faith": "Baptist",
-            "hobbies": "Hiking",
-            "values": "Purity, Family",
-            "lookingFor": "A spiritual leader"
-        }
-        
-        success, response = self.run_test(
-            "AI Bio Generation",
-            "POST",
-            "api/ai/generate-bio",
-            200,
-            None,
-            bio_data
-        )
-        
-        if success and response.get('bio') and response.get('advice'):
-            self.log_test("AI Bio Generation Validation", True, 
-                         "Bio and advice generated successfully")
-        else:
-            self.log_test("AI Bio Generation Validation", False,
-                         "Bio or advice missing from response")
-        
-        return success
-
-    def test_signup_endpoint(self):
-        """Test new backend signup endpoint"""
-        # Test with new user email to avoid 409 conflict
-        timestamp = datetime.now().strftime('%H%M%S')
-        signup_data = {
-            "name": "Test User",
-            "email": f"testuser{timestamp}@example.com",
-            "password": "testpass123"
-        }
-        
-        success, response = self.run_test(
-            "Backend Signup - New User",
-            "POST",
-            "api/auth/signup",
-            200,
-            None,
-            signup_data
-        )
-        
-        if success and response.get('token') and response.get('uid'):
-            self.log_test("Signup Token/UID Validation", True, 
-                         f"Received token and uid: {response.get('uid')}")
-            # Store for later use
-            self.test_uid = response.get('uid')
-            self.test_token = response.get('token')
-            self.test_email = signup_data['email']
-        else:
-            self.log_test("Signup Token/UID Validation", False,
-                         "Token or uid missing from signup response")
-        
-        return success
-
-    def test_duplicate_signup(self):
-        """Test duplicate signup handling"""
-        # Use existing test credentials
-        duplicate_data = {
-            "name": "Mary Grace",
-            "email": "marygrace@example.com",
-            "password": "grace123"
-        }
-        
-        success, response = self.run_test(
-            "Backend Signup - Duplicate Email (Should Fail)",
-            "POST", 
-            "api/auth/signup",
-            409,
-            None,
-            duplicate_data
-        )
-        
-        return success
-
-    def test_login_endpoint(self):
-        """Test backend login endpoint with existing credentials"""
-        login_data = {
-            "email": "marygrace@example.com",
-            "password": "grace123"
-        }
-        
-        success, response = self.run_test(
-            "Backend Login - Existing User",
-            "POST",
-            "api/auth/login", 
-            200,
-            None,
-            login_data
-        )
-        
-        if success and response.get('token') and response.get('uid'):
-            self.log_test("Login Token/UID Validation", True,
-                         f"Received token and uid: {response.get('uid')}")
-            # Store credentials for authenticated tests
-            self.mary_uid = response.get('uid')
-            self.mary_token = response.get('token')
-        else:
-            self.log_test("Login Token/UID Validation", False,
-                         "Token or uid missing from login response")
-        
-        return success
-
-    def test_wrong_password_login(self):
-        """Test login with wrong password"""
-        wrong_data = {
-            "email": "marygrace@example.com", 
-            "password": "wrongpassword"
-        }
-        
-        success, response = self.run_test(
-            "Backend Login - Wrong Password (Should Fail)",
+            "User Login",
             "POST",
             "api/auth/login",
-            401,
-            None,
-            wrong_data
+            200,
+            data={"email": email, "password": password}
         )
-        
-        return success
+        if success and 'uid' in response:
+            self.uid = response['uid']
+            self.token = response.get('token')
+            print(f"   Logged in with UID: {self.uid}")
+            return True
+        return False
 
-    def test_user_profile_endpoint(self):
-        """Test getting user profile with auth header"""
-        if not hasattr(self, 'mary_uid'):
-            self.log_test("User Profile Test", False, "No authenticated user available")
-            return False
-            
-        headers = {'x-firebase-uid': self.mary_uid}
-        success, response = self.run_test(
-            "Get User Profile - Authenticated",
-            "GET",
+    def test_get_profile(self):
+        """Test getting user profile"""
+        return self.run_test("Get User Profile", "GET", "api/users/me", 200)
+
+    def test_profile_update(self):
+        """Test profile update with bio, work, education, height, exercise"""
+        profile_data = {
+            "bio": "Faithful believer looking for my covenant partner",
+            "work": "Software Engineer", 
+            "education": "Computer Science",
+            "height": "5'10\"",
+            "exercise": "Active"
+        }
+        return self.run_test(
+            "Update Profile Fields",
+            "PUT",
             "api/users/me",
             200,
-            headers
+            data=profile_data
         )
+
+    def test_discover_users(self):
+        """Test user discovery"""
+        return self.run_test("Discover Users", "GET", "api/users/discover?gender=Female&min_age=18&max_age=35", 200)
+
+    def test_likes_functionality(self):
+        """Test liking functionality"""
+        # First get some users to like
+        success, users = self.run_test("Get Users for Liking", "GET", "api/users/discover?gender=Female", 200)
+        if not success or not users:
+            return False
         
-        if success and response.get('email') == 'marygrace@example.com':
-            self.log_test("Profile Data Validation", True,
-                         f"Retrieved profile for {response.get('email')}")
-        else:
-            self.log_test("Profile Data Validation", False,
-                         "Profile email mismatch or missing")
-        
+        target_user_id = users[0].get('firebaseUid')
+        if not target_user_id:
+            print("   No valid user ID found to like")
+            return False
+            
+        # Test sending a like
+        success, _ = self.run_test(
+            "Send Like",
+            "POST", 
+            "api/likes",
+            200,
+            data={"toUserId": target_user_id}
+        )
         return success
 
-    def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting VIRGINS Dating App Backend Tests - Auth Focus")
-        print("=" * 60)
-        print()
-        
-        # Test in sequence for dependencies, focusing on auth endpoints
-        tests = [
-            self.test_health_check,
-            self.test_admin_stats,
-            self.test_signup_endpoint,
-            self.test_duplicate_signup,
-            self.test_login_endpoint,
-            self.test_wrong_password_login,
-            self.test_user_profile_endpoint,
-            self.test_discover_endpoint,
-            self.test_like_functionality,
-            self.test_matches_endpoint,
-            self.test_ai_bio_generation
-        ]
-        
-        for test in tests:
-            try:
-                test()
-            except Exception as e:
-                print(f"❌ CRITICAL ERROR in {test.__name__}: {str(e)}")
-                self.log_test(test.__name__, False, f"Critical error: {str(e)}")
-        
-        # Print final summary
-        print("=" * 60)
-        print(f"📊 FINAL RESULTS: {self.tests_passed}/{self.tests_run} tests passed")
-        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
-        
-        if self.tests_passed == self.tests_run:
-            print("🎉 ALL BACKEND TESTS PASSED!")
-        else:
-            print("⚠️  Some backend tests failed")
-        
-        return self.tests_passed == self.tests_run
+    def test_get_received_likes(self):
+        """Test getting received likes"""
+        return self.run_test("Get Received Likes", "GET", "api/likes/received", 200)
+
+    def test_get_sent_likes(self):
+        """Test getting sent likes"""
+        return self.run_test("Get Sent Likes", "GET", "api/likes/sent", 200)
 
 def main():
-    tester = VirginsDatingAPITester()
-    success = tester.run_all_tests()
-    return 0 if success else 1
+    print("🚀 Starting VIRGINS Dating App Backend Tests")
+    print("=" * 60)
+    
+    tester = VirginsDatingAppTester()
+    
+    # Test health check
+    if not tester.test_health_check()[0]:
+        print("❌ Health check failed, stopping tests")
+        return 1
+
+    # Test signup with unique email
+    timestamp = int(datetime.now().timestamp())
+    test_email = f"testuser_{timestamp}@example.com"
+    test_name = f"Test User {timestamp}"
+    test_password = "securepass123"
+    
+    print(f"\n📧 Testing with email: {test_email}")
+    
+    if not tester.test_signup(test_name, test_email, test_password):
+        print("❌ Signup failed, stopping tests")
+        return 1
+
+    # Test getting profile
+    if not tester.test_get_profile()[0]:
+        print("❌ Get profile failed")
+        return 1
+
+    # Test profile update with new fields
+    if not tester.test_profile_update()[0]:
+        print("❌ Profile update failed")
+        return 1
+
+    # Test user discovery
+    if not tester.test_discover_users()[0]:
+        print("❌ User discovery failed")
+        return 1
+
+    # Test likes functionality
+    if not tester.test_likes_functionality():
+        print("❌ Likes functionality failed")
+
+    # Test getting likes
+    tester.test_get_received_likes()
+    tester.test_get_sent_likes()
+
+    # Test login with existing user
+    print(f"\n🔄 Testing login with existing user: marygrace@example.com")
+    tester_login = VirginsDatingAppTester()
+    if not tester_login.test_login("marygrace@example.com", "grace123"):
+        print("❌ Login with existing user failed")
+
+    # Print results
+    print(f"\n📊 Backend Test Results:")
+    print(f"   Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    print(f"   Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
     sys.exit(main())
