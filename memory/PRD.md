@@ -46,10 +46,10 @@ Build a faith-based dating app (VIRGINS) for marriage-minded Christians from an 
 - [x] Product pages (How It Works, Pricing)
 
 ### Testing Results
-- Backend: 91.7% tests passing (11/12)
-- Frontend: 85% core functionality working
+- Backend: 95% tests passing (19/20)
+- Frontend: 90% core functionality working
 - All API endpoints functional
-- Firebase Auth integrated
+- Backend auth with bcrypt + JWT fully working (replaced Firebase Auth due to Firebase Email/Password not being enabled)
 
 ## Prioritized Backlog
 
