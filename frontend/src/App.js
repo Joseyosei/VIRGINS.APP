@@ -74,7 +74,8 @@ function AppInner() {
       case 'how-it-works':
         return <HowItWorks onNavigate={setCurrentPage} />;
       case 'pricing':
-        return <Pricing onNavigate={setCurrentPage} />;
+      case 'membership':
+        return <MembershipPage onNavigate={setCurrentPage} />;
       case 'about':
         return <About />;
       case 'careers':
