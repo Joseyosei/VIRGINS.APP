@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 
 class VirginsDatingAppTester:
-    def __init__(self, base_url="https://27f60236-87dd-4eea-9a6a-6815079e7e3d.preview.emergentagent.com"):
+    def __init__(self, base_url="https://pure-match-2.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.uid = None
