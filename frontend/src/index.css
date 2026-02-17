@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1A1A2E; }
+::-webkit-scrollbar-thumb { background: #D4A574; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #B8860B; }
+
+html { scroll-behavior: smooth; }
+body { background-color: #ffffff; margin: 0; font-family: 'Inter', sans-serif; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
