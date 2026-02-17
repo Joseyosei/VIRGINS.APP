@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi import FastAPI, HTTPException, Header, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from contextlib import asynccontextmanager
@@ -7,9 +7,11 @@ from datetime import datetime, timezone
 from bson import ObjectId
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 from passlib.context import CryptContext
+from math import radians, sin, cos, sqrt, atan2
 import jwt
 import os
 import uuid
+import httpx
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 JWT_SECRET = os.environ.get("JWT_SECRET", "virgins-app-secret-key-2024")
