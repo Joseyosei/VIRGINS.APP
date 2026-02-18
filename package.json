@@ -1,35 +1,43 @@
 {
   "name": "virgins-dating-app",
   "version": "1.0.0",
-  "main": "server/index.ts",
+  "type": "module",
+  "main": "src/main.tsx",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "server": "nodemon --watch 'server/**/*.ts' --exec 'ts-node' server/index.ts",
-    "dev": "concurrently \"npm run start\" \"npm run server\""
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@blinkdotnew/react": "^1.0.2",
+    "@blinkdotnew/sdk": "^2.3.5",
+    "@google/genai": "^1.40.0",
+    "@react-navigation/bottom-tabs": "^6.5.20",
+    "@react-navigation/native": "^6.1.17",
+    "@react-navigation/native-stack": "^6.9.26",
+    "@tailwindcss/postcss": "^4.2.0",
+    "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "expo": "~50.0.14",
+    "expo-blur": "~12.9.2",
+    "expo-image-picker": "~14.7.1",
+    "expo-linear-gradient": "~12.7.2",
     "expo-status-bar": "~1.11.1",
+    "express": "^4.18.3",
+    "framer-motion": "^12.34.1",
+    "helmet": "^7.1.0",
+    "lucide-react": "^0.574.0",
+    "lucide-react-native": "^0.368.0",
+    "mongoose": "^8.2.1",
     "react": "18.2.0",
+    "react-hot-toast": "^2.6.0",
     "react-native": "0.73.6",
     "react-native-safe-area-context": "4.8.2",
     "react-native-screens": "~3.29.0",
-    "@react-navigation/native": "^6.1.17",
-    "@react-navigation/native-stack": "^6.9.26",
-    "@react-navigation/bottom-tabs": "^6.5.20",
-    "lucide-react-native": "^0.368.0",
-    "expo-linear-gradient": "~12.7.2",
-    "expo-blur": "~12.9.2",
-    "express": "^4.18.3",
-    "mongoose": "^8.2.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "@google/genai": "^0.1.0",
-    "helmet": "^7.1.0",
-    "expo-image-picker": "~14.7.1"
+    "tailwind-merge": "^3.4.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -40,7 +48,8 @@
     "@types/node": "^20.11.25",
     "ts-node": "^10.9.2",
     "nodemon": "^3.1.0",
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "vite": "^5.2.11"
   },
   "private": true
 }
