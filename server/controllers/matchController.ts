@@ -4,6 +4,7 @@ import User from '../models/User';
 import Match from '../models/Match';
 import Conversation from '../models/Conversation';
 import { getIO } from '../lib/socket';
+import { sendPushToUser } from '../services/pushService';
 import mongoose from 'mongoose';
 
 export const likeUser = async (req: AuthRequest, res: Response) => {
@@ -52,6 +53,21 @@ export const likeUser = async (req: AuthRequest, res: Response) => {
           user: currentUser
         });
       } catch (_) {}
+
+      // Push notifications for mutual match
+      const targetUser = await User.findById(targetId).select('name');
+      sendPushToUser(
+        targetId,
+        "You have a Covenant Match! 💛",
+        `${currentUser?.name} liked you back`,
+        { type: 'match', matchId: String(theyLikedUs._id) }
+      ).catch(() => {});
+      sendPushToUser(
+        userId,
+        "You have a Covenant Match! 💛",
+        `${targetUser?.name} liked you back`,
+        { type: 'match', matchId: String(theyLikedUs._id) }
+      ).catch(() => {});
 
       return res.json({
         matched: true,

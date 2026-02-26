@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
@@ -5,7 +6,18 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
+import mongoose from 'mongoose';
 import connectDB from './config/db';
+
+dotenv.config();
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV || 'development',
+  tracesSampleRate: 1.0,
+  enabled: !!process.env.SENTRY_DSN,
+});
 import { setIO } from './lib/socket';
 import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
@@ -15,13 +27,16 @@ import verificationRoutes from './routes/verificationRoutes';
 import premiumRoutes from './routes/premiumRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
 import adminRoutes from './routes/adminRoutes';
+import pushRoutes from './routes/pushRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 import Message from './models/Message';
+import { sendPushToUser } from './services/pushService';
 import Conversation from './models/Conversation';
 import User from './models/User';
 
-dotenv.config();
-
 const app = express();
+Sentry.setupExpressErrorHandler(app);
 const httpServer = createServer(app);
 
 const io = new SocketIOServer(httpServer, {
@@ -45,6 +60,20 @@ app.use(cors({
 app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }) as any);
 
+// Rate limiting
+const generalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { message: 'Too many login attempts, please try again later.' } });
+const forgotPasswordLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: { message: 'Too many password reset requests.' } });
+const aiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, message: { message: 'AI request limit reached. Please wait.' } });
+const videoLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: { message: 'Video generation limit reached.' } });
+
+app.use('/api/', generalLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/forgot-password', forgotPasswordLimiter);
+app.use('/api/users/ai/', aiLimiter);
+app.use('/api/users/generate-bio', aiLimiter);
+app.use('/api/users/generate-video', videoLimiter);
+
 connectDB();
 
 app.use('/api/auth', authRoutes);
@@ -55,9 +84,17 @@ app.use('/api/verify', verificationRoutes);
 app.use('/api/premium', premiumRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/push', pushRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get('/', (_req, res) => {
   res.json({ message: 'Virgins API — Love Worth Waiting For.', socketio: 'enabled', version: '1.0.0' });
+});
+
+app.get('/health', async (_req, res) => {
+  const dbState = mongoose.connection.readyState; // 1 = connected
+  res.json({ status: 'ok', db: dbState === 1 ? 'connected' : 'disconnected', uptime: process.uptime() });
 });
 
 // ========================
@@ -120,6 +157,18 @@ io.on('connection', async (socket) => {
         ...message.toObject(),
         senderId: userId
       });
+
+      // Push notification for offline recipient
+      const recipientId = conv.participants.find(p => p.toString() !== userId)?.toString();
+      if (recipientId && !onlineUsers.has(recipientId)) {
+        const sender = await User.findById(userId).select('name').catch(() => null);
+        sendPushToUser(
+          recipientId,
+          `New message from ${sender?.name || 'Someone'}`,
+          content.substring(0, 60),
+          { type: 'message', conversationId }
+        ).catch(() => {});
+      }
     } catch (err) {
       console.error('[Socket] send_message error:', err);
     }
@@ -160,5 +209,18 @@ app.use((err: any, _req: any, res: any, _next: any) => {
 httpServer.listen(PORT, () => {
   console.log(`[Virgins API] Server + Socket.io running on port ${PORT}`);
 });
+
+// Graceful shutdown
+const shutdown = async () => {
+  console.log('[Virgins API] Graceful shutdown initiated...');
+  await mongoose.connection.close().catch(() => {});
+  httpServer.close(() => {
+    console.log('[Virgins API] HTTP server closed.');
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 10000);
+};
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 export { io };

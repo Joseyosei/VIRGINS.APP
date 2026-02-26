@@ -8,5 +8,9 @@ const conversationSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 
+conversationSchema.index({ participants: 1 });
+conversationSchema.index({ lastMessageAt: -1 });
+conversationSchema.index({ isActive: 1, lastMessageAt: -1 });
+
 const Conversation = mongoose.model('Conversation', conversationSchema);
 export default Conversation;

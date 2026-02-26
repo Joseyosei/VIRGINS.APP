@@ -1,3 +1,4 @@
+import './lib/sentry'; // Initialize Sentry before anything else
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Toaster } from 'react-hot-toast'

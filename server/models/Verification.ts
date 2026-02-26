@@ -40,5 +40,8 @@ const verificationSchema = new mongoose.Schema({
   verifiedAt: { type: Date },
 }, { timestamps: true });
 
+verificationSchema.index({ idReviewStatus: 1 });
+verificationSchema.index({ backgroundCheckStatus: 1 });
+
 const Verification = mongoose.model('Verification', verificationSchema);
 export default Verification;

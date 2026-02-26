@@ -16,10 +16,12 @@ import {
 } from '../controllers/userController';
 import { protect } from '../middleware/auth';
 import { imageUpload, videoUpload } from '../middleware/upload';
+import { validate } from '../middleware/validate';
+import { registerSchema } from '../validators/userValidators';
 const router = express.Router();
 
 // Auth & Profile
-router.post('/register', registerUser);
+router.post('/register', validate(registerSchema), registerUser);
 router.get('/verify-email/:token', verifyUserEmail);
 
 // AI Features

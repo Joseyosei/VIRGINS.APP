@@ -90,9 +90,21 @@ const userSchema = new mongoose.Schema({
   stripeCustomerId: { type: String },
   passwordResetToken: { type: String },
   passwordResetExpiry: { type: Date },
+
+  // Phase 5 — onboarding analytics
+  onboardingStep: { type: Number, default: 0 },
+  onboardingCompletedAt: { type: Date },
 }, {
   timestamps: true
 });
+
+// Critical indexes for matching, auth, admin
+userSchema.index({ city: 1, faith: 1, trustLevel: 1 });
+userSchema.index({ isPremium: 1, createdAt: -1 });
+userSchema.index({ isOnline: 1, lastSeen: -1 });
+userSchema.index({ boostExpiresAt: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ isBanned: 1 });
 
 const User = mongoose.model('User', userSchema);
 export default User;

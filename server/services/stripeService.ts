@@ -13,7 +13,7 @@ export const getStripe = (): Stripe => {
     if (!isConfigured()) {
       throw new Error('Stripe not configured. Set STRIPE_SECRET_KEY in .env');
     }
-    stripeClient = new Stripe(SECRET_KEY, { apiVersion: '2025-01-27.acacia' });
+    stripeClient = new Stripe(SECRET_KEY, { apiVersion: '2026-02-25.clover' });
   }
   return stripeClient;
 };

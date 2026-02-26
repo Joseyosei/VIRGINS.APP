@@ -275,4 +275,43 @@ Object.assign(ApiClient.prototype, {
   unbanUser(userId: string) {
     return (this as any).request(`/api/admin/users/${userId}/unban`, { method: 'PUT' });
   },
+
+  // Notifications
+  getNotifications(page = 1) {
+    return (this as any).request(`/api/notifications?page=${page}`);
+  },
+
+  markNotificationRead(id: string) {
+    return (this as any).request(`/api/notifications/${id}/read`, { method: 'PUT' });
+  },
+
+  markAllNotificationsRead() {
+    return (this as any).request('/api/notifications/read-all', { method: 'PUT' });
+  },
+
+  // Push token registration
+  registerPushToken(token: string) {
+    return (this as any).request('/api/push/register', {
+      method: 'POST',
+      body: JSON.stringify({ token })
+    });
+  },
+
+  unregisterPushToken() {
+    return (this as any).request('/api/push/unregister', { method: 'DELETE' });
+  },
+
+  // Onboarding analytics
+  trackOnboardingStep(step: number) {
+    return (this as any).request('/api/analytics/onboarding-step', {
+      method: 'POST',
+      body: JSON.stringify({ step })
+    }).catch(() => {}); // Silent — never block onboarding
+  },
+
+  trackOnboardingComplete() {
+    return (this as any).request('/api/analytics/onboarding-complete', {
+      method: 'POST'
+    }).catch(() => {}); // Silent
+  },
 });

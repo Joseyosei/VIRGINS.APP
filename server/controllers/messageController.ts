@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import Conversation from '../models/Conversation';
 import Message from '../models/Message';
+import { filterMessage } from '../services/moderationService';
 
 export const getConversations = async (req: AuthRequest, res: Response) => {
   try {
@@ -48,6 +49,11 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
 
     if (!content?.trim()) return res.status(400).json({ message: 'Message content required' });
 
+    const modResult = filterMessage(content.trim());
+    if (modResult.flagged) {
+      return res.status(400).json({ message: modResult.reason || 'Message contains inappropriate content' });
+    }
+
     const conv = await Conversation.findById(id);
     if (!conv || !conv.participants.map(p => p.toString()).includes(req.userId!)) {
       return res.status(403).json({ message: 'Not a participant' });
@@ -56,7 +62,7 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
     const message = await Message.create({
       conversationId: id,
       senderId: req.userId,
-      content: content.trim(),
+      content: modResult.clean,
       type
     });
 
