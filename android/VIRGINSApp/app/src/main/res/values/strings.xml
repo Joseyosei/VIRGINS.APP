@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VIRGINS</string>
+    <string name="tagline">Love Worth Waiting For</string>
+    <string name="sign_in">Sign In</string>
+    <string name="create_account">Create Covenant Profile</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="discover">Discover</string>
+    <string name="matches">Matches</string>
+    <string name="messages">Messages</string>
+    <string name="verify">Verify</string>
+    <string name="profile">Profile</string>
+    <string name="trust_level">Trust Level</string>
+    <string name="covenant_score">Covenant Score</string>
+    <string name="upgrade_to_premium">Upgrade to Premium</string>
+    <string name="its_a_match">It\'s a Covenant Match!</string>
+</resources>
