@@ -224,8 +224,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
     <div className="min-h-screen bg-white pt-24 pb-12 flex flex-col items-center justify-center relative overflow-hidden">
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full">
-          <div className="absolute top-40 left-20 w-96 h-96 bg-gold-100 rounded-full blur-[100px]"></div>
-          <div className="absolute bottom-40 right-20 w-96 h-96 bg-primary-100 rounded-full blur-[100px]"></div>
+          <div className="absolute top-40 left-20 w-96 h-96 bg-virgins-gold/10 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-40 right-20 w-96 h-96 bg-virgins-purple/10 rounded-full blur-[100px]"></div>
         </div>
       </div>
 
@@ -233,14 +233,14 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
         {step < 6 && (
           <div className="mb-8 max-w-xs mx-auto">
              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-navy-900 transition-all duration-500 ease-out"
+                <div
+                  className="h-full bg-virgins-purple transition-all duration-500 ease-out"
                   style={{ width: `${(step / 5) * 100}%` }}
                 ></div>
              </div>
              <div className="flex justify-between mt-2 px-1">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Step {step} of 5</span>
-                <span className="text-[10px] font-bold text-navy-900 uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-virgins-purple uppercase tracking-widest">
                   {step === 1 ? 'Email' : step === 2 ? 'Basics' : step === 3 ? 'Preferences' : step === 4 ? 'Values' : 'Photos'}
                 </span>
              </div>
@@ -249,7 +249,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
 
         <div className="text-center mb-8 relative">
            {step > 1 && step < 6 && (
-             <button onClick={() => setStep(s => (s-1) as any)} className="absolute left-0 top-1 text-slate-400 hover:text-navy-900 transition-colors">
+             <button onClick={() => setStep(s => (s-1) as any)} className="absolute left-0 top-1 text-slate-400 hover:text-virgins-purple transition-colors">
                 <ChevronLeft size={24} />
              </button>
            )}
@@ -286,7 +286,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                     <input
                       type="email"
                       required
-                      className="block w-full px-5 py-4 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white transition-all outline-none text-slate-900 font-medium"
+                      className="block w-full px-5 py-4 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-virgins-purple focus:bg-white transition-all outline-none text-slate-900 font-medium"
                       placeholder="you@example.com"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
@@ -296,7 +296,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center py-4 px-6 rounded-2xl shadow-lg text-lg font-bold text-white bg-navy-900 hover:bg-navy-800 transition-all hover:scale-[1.02] active:scale-95"
+                  className="w-full flex items-center justify-center py-4 px-6 rounded-2xl shadow-lg text-lg font-bold text-white bg-virgins-purple hover:bg-virgins-purple/90 transition-all hover:scale-[1.02] active:scale-95"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Start My Journey'}
                 </button>
@@ -311,7 +311,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Full Name</label>
                     <input
                       type="text" required
-                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-virgins-purple focus:bg-white outline-none"
                       placeholder="Enter Full Name"
                       value={details.name}
                       onChange={e => setDetails({...details, name: e.target.value})}
@@ -321,7 +321,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Age</label>
                     <input
                       type="number" required min="18"
-                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-virgins-purple focus:bg-white outline-none"
                       placeholder="21"
                       value={details.age}
                       onChange={e => setDetails({...details, age: e.target.value})}
@@ -330,7 +330,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Gender</label>
                     <select 
-                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none appearance-none"
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-virgins-purple focus:bg-white outline-none appearance-none"
                       value={details.gender}
                       onChange={e => setDetails({...details, gender: e.target.value})}
                       required
@@ -346,14 +346,14 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                   <div className="space-y-3">
                     <input
                       type="text" required
-                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-virgins-purple focus:bg-white outline-none"
                       placeholder="Denomination (e.g. Baptist)"
                       value={details.faith}
                       onChange={e => setDetails({...details, faith: e.target.value})}
                     />
                     <input
                       type="text" required
-                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-navy-900 focus:bg-white outline-none"
+                      className="block w-full px-5 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-virgins-purple focus:bg-white outline-none"
                       placeholder="Current City (e.g. Austin, TX)"
                       value={details.city}
                       onChange={e => setDetails({...details, city: e.target.value})}
@@ -378,7 +378,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                         <button
                           key={opt}
                           onClick={() => togglePreference('lookingFor', opt)}
-                          className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all ${details.lookingFor.includes(opt) ? 'bg-navy-900 text-white border-navy-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                          className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all ${details.lookingFor.includes(opt) ? 'bg-virgins-purple text-white border-virgins-purple shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
                         >
                           {opt}
                         </button>
@@ -393,7 +393,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                         <button
                           key={opt}
                           onClick={() => togglePreference('interests', opt)}
-                          className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all ${details.interests.includes(opt) ? 'bg-gold-500 text-white border-gold-500 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                          className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all ${details.interests.includes(opt) ? 'bg-virgins-gold text-virgins-dark border-virgins-gold shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
                         >
                           {opt}
                         </button>
@@ -419,13 +419,14 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                   <div key={q.id}>
                     <div className="flex justify-between items-end mb-3">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{q.label}</label>
-                      <span className="text-navy-900 font-black text-sm">{(details as any)[`${q.id}_level`]}/10</span>
+                      <span className="text-virgins-purple font-black text-sm">{(details as any)[`${q.id}_level`]}/10</span>
                     </div>
                     <p className="text-xs text-slate-600 mb-4 leading-relaxed">{q.question}</p>
                     <input
                       type="range"
                       min="1" max="10" step="1"
-                      className="w-full h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-navy-900"
+                      className="w-full h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer"
+                      style={{ accentColor: 'hsl(270 100% 25%)' }}
                       value={(details as any)[`${q.id}_level`]}
                       onChange={e => setDetails({...details, [`${q.id}_level`]: parseInt(e.target.value)})}
                     />
@@ -457,23 +458,23 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                   {photos.map((photo, index) => (
                     <div
                       key={index}
-                      className={`relative aspect-[3/4] rounded-3xl overflow-hidden border-2 transition-all flex flex-col items-center justify-center ${photo ? 'border-navy-900' : 'border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300'}`}
+                      className={`relative aspect-[3/4] rounded-3xl overflow-hidden border-2 transition-all flex flex-col items-center justify-center ${photo ? 'border-virgins-purple' : 'border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300'}`}
                     >
                       {photo ? (
                         <>
                           <img src={photo} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-navy-900/40 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
-                             <button 
+                          <div className="absolute inset-0 bg-virgins-dark/40 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+                             <button
                                onClick={() => runAudit(index)}
                                title="AI Value Audit"
-                               className="p-2 bg-white text-navy-900 rounded-full hover:bg-gold-50 shadow-xl"
+                               className="p-2 bg-white text-virgins-dark rounded-full hover:bg-virgins-gold/10 shadow-xl"
                              >
                                 <SearchCode size={18} />
                              </button>
-                             <button 
+                             <button
                                onClick={() => runEdit(index)}
                                title="Traditional Retouch"
-                               className="p-2 bg-white text-navy-900 rounded-full hover:bg-gold-50 shadow-xl"
+                               className="p-2 bg-white text-virgins-dark rounded-full hover:bg-virgins-gold/10 shadow-xl"
                              >
                                 <Wand2 size={18} />
                              </button>
@@ -487,17 +488,17 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                           </div>
                           {analyzing === index && (
                              <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center">
-                                <Loader2 className="animate-spin text-navy-900" />
+                                <Loader2 className="animate-spin text-virgins-purple" />
                              </div>
                           )}
                           {editing === index && (
-                             <div className="absolute inset-0 bg-gold-500/20 backdrop-blur-sm flex flex-col items-center justify-center">
-                                <Sparkles className="animate-pulse text-gold-600 mb-1" />
-                                <span className="text-[8px] font-black text-navy-900 uppercase">AI Applying Filter...</span>
+                             <div className="absolute inset-0 bg-virgins-gold/20 backdrop-blur-sm flex flex-col items-center justify-center">
+                                <Sparkles className="animate-pulse text-virgins-gold mb-1" />
+                                <span className="text-[8px] font-black text-virgins-dark uppercase">AI Applying Filter...</span>
                              </div>
                           )}
                           {auditFeedback[index] && !analyzing && (
-                             <div className="absolute bottom-0 left-0 right-0 bg-navy-900/90 text-white p-2 text-[8px] font-bold leading-tight uppercase tracking-tighter">
+                             <div className="absolute bottom-0 left-0 right-0 bg-virgins-dark/90 text-white p-2 text-[8px] font-bold leading-tight uppercase tracking-tighter">
                                 {auditFeedback[index]}
                              </div>
                           )}
@@ -508,7 +509,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                           className="w-full h-full flex flex-col items-center justify-center p-4 text-center group"
                         >
                           <div className="w-10 h-10 bg-white rounded-full shadow-sm mb-2 flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-transform">
-                             <Plus size={20} className="text-gold-500" />
+                             <Plus size={20} className="text-virgins-gold" />
                           </div>
                           <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{index === 0 ? 'Main Portrait' : `Slot ${index+1}`}</span>
                           <div className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -521,20 +522,20 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                   ))}
                 </div>
 
-                <div className="p-5 bg-navy-50 rounded-[2rem] space-y-4">
+                <div className="p-5 bg-virgins-cream rounded-[2rem] space-y-4">
                    <div className="flex items-start gap-4">
-                     <div className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 border border-gold-100">
-                        <Sparkles className="w-4 h-4 text-gold-600" />
+                     <div className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 border border-virgins-gold/20">
+                        <Sparkles className="w-4 h-4 text-virgins-gold" />
                      </div>
-                     <p className="text-xs text-navy-800 leading-relaxed font-medium">
+                     <p className="text-xs text-virgins-purple leading-relaxed font-medium">
                        <strong>Covenant AI Audit:</strong> Hover over an image to verify modesty guidelines and value alignment before submission.
                      </p>
                    </div>
                    <div className="flex items-start gap-4">
-                     <div className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 border border-gold-100">
-                        <Camera className="w-4 h-4 text-gold-600" />
+                     <div className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0 border border-virgins-gold/20">
+                        <Camera className="w-4 h-4 text-virgins-gold" />
                      </div>
-                     <p className="text-xs text-navy-800 leading-relaxed font-medium">
+                     <p className="text-xs text-virgins-purple leading-relaxed font-medium">
                        <strong>Selection:</strong> Click any slot to choose from your <strong>Photo Gallery</strong> or use your <strong>Device Camera</strong> directly.
                      </p>
                    </div>
@@ -544,7 +545,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                   <button
                     onClick={handleFinalSubmit}
                     disabled={loading || photoCount < 2}
-                    className="w-full py-4 rounded-2xl text-white bg-navy-900 font-bold shadow-xl disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-2xl text-white bg-virgins-purple font-bold shadow-xl disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
                   >
                     {loading ? <Loader2 className="animate-spin" /> : 'Complete Registration'}
                   </button>
@@ -566,7 +567,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                  <div className="space-y-4">
                     <button 
                        onClick={() => onNavigate('matchmaker')}
-                       className="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-navy-900 rounded-2xl shadow-xl hover:bg-navy-800 transition-all transform hover:scale-105 text-white font-bold"
+                       className="w-full flex items-center justify-center space-x-2 py-4 px-6 bg-virgins-purple rounded-2xl shadow-xl hover:bg-virgins-purple/90 transition-all transform hover:scale-105 text-white font-bold"
                     >
                        <Compass className="w-5 h-5" />
                        <span>Launch Discover Feed</span>

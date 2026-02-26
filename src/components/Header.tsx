@@ -29,12 +29,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
 
   const navItemClass = (page: PageView) => 
     `group flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-500 ${
-      currentPage === page 
-        ? (scrolled ? 'bg-white text-navy-900' : 'bg-navy-900 text-gold-500') + ' shadow-lg scale-105' 
-        : (scrolled ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-navy-900 hover:bg-slate-100/80')
+      currentPage === page
+        ? (scrolled ? 'bg-white text-virgins-purple' : 'bg-virgins-purple text-virgins-gold') + ' shadow-lg scale-105'
+        : (scrolled ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-virgins-purple hover:bg-slate-100/80')
     }`;
 
-  const RingsLogo = ({ className, color = "#D4A574" }: { className?: string, color?: string }) => (
+  const RingsLogo = ({ className, color = "#C9A84C" }: { className?: string, color?: string }) => (
     <svg viewBox="0 0 100 80" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="35" cy="45" r="22" stroke={color} strokeWidth="5" />
       <circle cx="65" cy="45" r="22" stroke={color} strokeWidth="5" />
@@ -46,8 +46,8 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
     <header className={`fixed w-full z-50 transition-all duration-700 px-4 ${scrolled ? 'pt-2' : 'pt-6'}`}>
       <div className={`max-w-7xl mx-auto transition-all duration-700 ${scrolled ? 'scale-[0.98]' : ''}`}>
         <div className={`flex justify-between items-center transition-all duration-700 shadow-2xl ${
-          scrolled 
-            ? 'bg-navy-900/80 backdrop-blur-xl border-white/10 py-2.5 px-5 rounded-full' 
+          scrolled
+            ? 'bg-virgins-dark/80 backdrop-blur-xl border-white/10 py-2.5 px-5 rounded-full'
             : 'bg-white/60 backdrop-blur-md border-white/40 py-3.5 px-6 rounded-[2.5rem]'
         }`}>
           
@@ -57,11 +57,11 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
               <div className="relative">
                 <RingsLogo 
                   className={`h-9 w-auto group-hover:rotate-[360deg] transition-transform duration-1000 ease-in-out ${scrolled ? 'brightness-125' : ''}`} 
-                  color={scrolled ? "#E6CFA6" : "#D4A574"}
+                  color="#C9A84C"
                 />
-                <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white animate-pulse ${scrolled ? 'bg-gold-300' : 'bg-gold-500'}`}></div>
+                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white animate-pulse bg-virgins-gold"></div>
               </div>
-              <span className={`hidden md:block text-xl font-serif font-black tracking-widest uppercase transition-colors duration-500 ${scrolled ? 'text-white' : 'text-navy-900'}`}>
+              <span className={`hidden md:block text-xl font-serif font-black tracking-widest uppercase transition-colors duration-500 ${scrolled ? 'text-white' : 'text-virgins-purple'}`}>
                 Virgins
               </span>
             </button>
@@ -90,12 +90,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
               <button 
                 onClick={() => handleNav('profile')}
                 className={`hidden sm:flex items-center gap-2 px-5 py-2 rounded-full font-bold text-[10px] border transition-all shadow-sm active:scale-95 ${
-                  scrolled 
-                    ? 'bg-white/10 text-gold-300 border-white/20 hover:border-gold-300' 
-                    : 'bg-gradient-to-r from-gold-50 to-white text-gold-700 border-gold-200/50 hover:border-gold-400'
+                  scrolled
+                    ? 'bg-white/10 text-virgins-gold border-white/20 hover:border-virgins-gold'
+                    : 'bg-gradient-to-r from-virgins-gold/10 to-white text-virgins-gold border-virgins-gold/20 hover:border-virgins-gold'
                 }`}
               >
-                <Sparkles size={12} className={scrolled ? 'text-gold-300' : 'text-gold-500'} />
+                <Sparkles size={12} className="text-virgins-gold" />
                 <span className="tabular-nums">250</span>
                 <span className="opacity-40 uppercase tracking-tighter">Beans</span>
               </button>
@@ -106,21 +106,21 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
                 <>
                   <button 
                     onClick={() => handleNav('login')}
-                    className={`hidden sm:block text-xs font-bold transition-colors px-3 ${scrolled ? 'text-white/60 hover:text-white' : 'text-slate-500 hover:text-navy-900'}`}
+                    className={`hidden sm:block text-xs font-bold transition-colors px-3 ${scrolled ? 'text-white/60 hover:text-white' : 'text-slate-500 hover:text-virgins-purple'}`}
                   >
                     Sign In
                   </button>
                   <button 
                     onClick={() => handleNav('signup')}
-                    className={`group relative overflow-hidden px-6 py-2.5 rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95 ${scrolled ? 'bg-gold-500' : 'bg-navy-900'}`}
+                    className={`group relative overflow-hidden px-6 py-2.5 rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95 ${scrolled ? 'bg-virgins-gold' : 'bg-virgins-purple'}`}
                   >
-                    <span className={`relative z-10 text-xs font-black uppercase tracking-widest ${scrolled ? 'text-navy-900' : 'text-white'}`}>Get Started</span>
+                    <span className={`relative z-10 text-xs font-black uppercase tracking-widest ${scrolled ? 'text-virgins-dark' : 'text-white'}`}>Get Started</span>
                   </button>
                 </>
               ) : (
                 <button 
                   onClick={() => handleNav('profile')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border border-gold-500/20 bg-gold-500/10 text-gold-600 font-bold text-xs transition-all hover:bg-gold-500/20 active:scale-95 ${scrolled ? 'text-gold-300' : ''}`}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full border border-virgins-gold/20 bg-virgins-gold/10 text-virgins-gold font-bold text-xs transition-all hover:bg-virgins-gold/20 active:scale-95"
                 >
                   <User size={14} />
                   <span className="hidden md:inline">{user?.displayName || user?.email?.split('@')[0]}</span>
@@ -130,7 +130,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
               {/* Mobile Menu Toggle */}
               <button
                 type="button"
-                className={`lg:hidden p-2 rounded-full shadow-xl transition-colors ${scrolled ? 'bg-white text-navy-900' : 'bg-navy-900 text-gold-500'}`}
+                className={`lg:hidden p-2 rounded-full shadow-xl transition-colors ${scrolled ? 'bg-white text-virgins-purple' : 'bg-virgins-purple text-virgins-gold'}`}
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -142,7 +142,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
 
       {/* Mobile menu Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-navy-900/95 backdrop-blur-3xl lg:hidden p-8 flex flex-col animate-fadeIn">
+        <div className="fixed inset-0 z-50 bg-virgins-dark/95 backdrop-blur-3xl lg:hidden p-8 flex flex-col animate-fadeIn">
           <div className="flex justify-between items-center mb-16">
              <div className="flex items-center gap-3">
                <RingsLogo className="h-10 w-auto" />
@@ -166,10 +166,10 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
                 onClick={() => handleNav(item.id as PageView)}
                 className="flex items-center gap-6 group"
               >
-                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gold-500 group-hover:bg-gold-500 group-hover:text-navy-900 transition-all">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-virgins-gold group-hover:bg-virgins-gold group-hover:text-virgins-dark transition-all">
                   {item.icon}
                 </div>
-                <span className="text-3xl font-serif font-bold text-slate-300 group-hover:text-gold-400 transition-colors">
+                <span className="text-3xl font-serif font-bold text-slate-300 group-hover:text-virgins-gold transition-colors">
                   {item.label}
                 </span>
               </button>
@@ -177,7 +177,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
           </nav>
 
           <div className="pt-12 space-y-4">
-             <button onClick={() => handleNav('signup')} className="w-full py-5 bg-gold-500 text-navy-900 rounded-[1.5rem] font-black text-xl shadow-2xl active:scale-95 transition-transform">Create Account</button>
+             <button onClick={() => handleNav('signup')} className="w-full py-5 bg-virgins-gold text-virgins-dark rounded-[1.5rem] font-black text-xl shadow-2xl active:scale-95 transition-transform">Create Account</button>
           </div>
         </div>
       )}

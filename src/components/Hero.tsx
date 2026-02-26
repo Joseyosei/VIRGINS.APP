@@ -85,7 +85,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="relative bg-slate-50 pt-20 pb-20 lg:pt-32 lg:pb-32 overflow-hidden">
+    <div className="relative bg-virgins-cream pt-20 pb-20 lg:pt-32 lg:pb-32 overflow-hidden">
       {/* Live Notification Toast */}
       {recentJoin && (
         <div className="fixed top-24 right-4 md:right-8 z-50 animate-fadeIn">
@@ -95,7 +95,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
              </div>
              <p className="text-xs font-medium text-slate-700">
-               Someone from <span className="font-bold text-navy-900">{recentJoin.city}</span> joined
+               Someone from <span className="font-bold text-virgins-purple">{recentJoin.city}</span> joined
              </p>
           </div>
         </div>
@@ -103,19 +103,19 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
       {/* Decorative background elements */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full overflow-hidden z-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-20 right-1/4 w-96 h-96 bg-gold-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-virgins-purple/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-20 right-1/4 w-96 h-96 bg-virgins-gold/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold tracking-widest uppercase bg-white text-primary-700 mb-8 border border-primary-100 shadow-sm animate-fadeIn">
+        <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold tracking-widest uppercase bg-virgins-purple/10 text-virgins-purple mb-8 border border-virgins-purple/20 shadow-sm animate-fadeIn">
           <ShieldCheck className="w-4 h-4 mr-2" />
           The #1 App for Marriage
         </div>
         
         <h1 className="text-5xl tracking-tight font-extrabold text-slate-900 sm:text-6xl md:text-7xl lg:text-8xl font-serif leading-tight mb-8">
           Courtship, <br/>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-primary-400 italic">Reimagined.</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-virgins-purple to-virgins-dark italic">Reimagined.</span>
         </h1>
         
         <p className="mt-6 max-w-2xl mx-auto text-xl text-slate-600 font-light leading-relaxed mb-10">
@@ -131,7 +131,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                 </div>
                 <input
                   type="email"
-                  className="block w-full pl-10 pr-3 py-4 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm shadow-sm transition-all"
+                  className="block w-full pl-10 pr-3 py-4 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-virgins-purple focus:border-virgins-purple sm:text-sm shadow-sm transition-all"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -142,7 +142,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-bold rounded-full text-white bg-gradient-to-r from-primary-600 to-gold-600 hover:from-primary-700 hover:to-gold-700 shadow-lg transform transition hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-bold rounded-full text-white bg-virgins-purple hover:bg-virgins-purple/90 shadow-lg transform transition hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Join Now'}
               </button>
@@ -163,9 +163,9 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         <div className="mt-12 flex flex-col items-center justify-center gap-4 text-sm text-slate-500">
           <div className="flex -space-x-3">
              {AVATARS.map((src, i) => (
-                <img key={i} className="inline-block h-10 w-10 rounded-full ring-4 ring-slate-50 object-cover" src={src} alt="Member"/>
+                <img key={i} className="inline-block h-10 w-10 rounded-full ring-4 ring-virgins-cream object-cover" src={src} alt="Member"/>
              ))}
-             <div className="h-10 w-10 rounded-full ring-4 ring-slate-50 bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+             <div className="h-10 w-10 rounded-full ring-4 ring-virgins-cream bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
                 {(Math.floor(userCount / 1000))}k+
              </div>
           </div>

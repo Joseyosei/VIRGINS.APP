@@ -24,7 +24,9 @@ export type PageView =
   | 'dashboard'
   | 'matches'
   | 'likes'
-  | 'membership';
+  | 'membership'
+  | 'messages'
+  | 'verification';
 
 export interface Testimonial {
   id: number;
@@ -132,4 +134,57 @@ export interface PlannedDate {
   venue: string;
   status: 'pending' | 'confirmed' | 'completed';
   type: string;
+}
+
+// === NEW PHASE 1 TYPES ===
+
+export type TrustLevel = 1 | 2 | 3 | 4;
+export type TrustBadge = 'pledge' | 'id_verified' | 'reference_verified' | 'background_checked';
+
+export interface TrustProfile {
+  trustLevel: TrustLevel;
+  trustBadges: TrustBadge[];
+}
+
+export interface ChatMessage {
+  _id: string;
+  conversationId: string;
+  senderId: string | { _id: string; name: string; profileImage?: string };
+  content: string;
+  type: 'text' | 'image' | 'voice' | 'gif';
+  readAt?: string;
+  createdAt: string;
+}
+
+export interface Conversation {
+  _id: string;
+  matchId: string;
+  participants: Array<{
+    _id: string;
+    name: string;
+    profileImage?: string;
+    trustLevel: TrustLevel;
+    isOnline: boolean;
+    lastSeen: string;
+  }>;
+  lastMessage?: string;
+  lastMessageAt?: string;
+}
+
+export interface ServerMatch {
+  _id: string;
+  userId1: string | any;
+  userId2: string | any;
+  matchedAt: string;
+  status: 'pending' | 'matched' | 'unmatched';
+  conversationId?: string;
+}
+
+export interface UserAnalytics {
+  weeklyViews: number;
+  totalLikes: number;
+  totalMatches: number;
+  profileCompleteness: number;
+  boostActive: boolean;
+  boostExpiresAt?: string;
 }
