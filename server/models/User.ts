@@ -83,6 +83,13 @@ const userSchema = new mongoose.Schema({
   lastSeen: { type: Date, default: Date.now },
   isOnline: { type: Boolean, default: false },
   pushToken: { type: String },
+
+  // Phase 4 additions
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  isBanned: { type: Boolean, default: false },
+  stripeCustomerId: { type: String },
+  passwordResetToken: { type: String },
+  passwordResetExpiry: { type: Date },
 }, {
   timestamps: true
 });

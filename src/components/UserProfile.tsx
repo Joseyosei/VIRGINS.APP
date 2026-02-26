@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Crown, Star, Gem, Settings, ArrowRight, Lock, Shield, Edit, MapPin, Eye, Heart, Users, LogOut, TrendingUp, Sparkles } from 'lucide-react';
+import { Crown, Star, Gem, Settings, ArrowRight, Lock, Shield, Edit, MapPin, Eye, Heart, Users, LogOut, TrendingUp, Sparkles, Upload, X, CheckCircle, Loader2 } from 'lucide-react';
+import { api } from '../lib/api';
+import { toast } from 'react-hot-toast';
 import { PageView, UserProfile as IUserProfile } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { blink } from '../lib/blink';
@@ -13,12 +15,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
   const [profile, setProfile] = useState<IUserProfile | null>(null);
   const [subscription, setSubscription] = useState<'free' | 'plus' | 'ultimate'>('free');
   const [incognito, setIncognito] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [profileImages, setProfileImages] = useState<string[]>([]);
+  const [subStatus, setSubStatus] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
       (blink.db as any).users.get({ user_id: user.id }).then((data: any) => {
-        if (data) setProfile(data);
+        if (data) {
+          setProfile(data);
+          if (data.images) setProfileImages(data.images);
+        }
       });
+      (api as any).getSubscriptionStatus().then((s: any) => {
+        if (s) setSubStatus(s);
+      }).catch(() => {});
     }
   }, [user]);
 
@@ -39,6 +50,33 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
     return 'Free Member';
   };
 
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const result = await (api as any).uploadProfilePhoto(file) as any;
+      setProfileImages(result.images || []);
+      toast.success('Photo uploaded!');
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed');
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeletePhoto = async (photoUrl: string) => {
+    try {
+      const result = await (api as any).deleteProfilePhoto(photoUrl) as any;
+      setProfileImages(result.images || []);
+      toast.success('Photo removed');
+    } catch (err: any) {
+      toast.error(err.message || 'Delete failed');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-virgins-cream pt-24 pb-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,13 +88,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
           <div className="relative z-10 p-8 flex flex-col items-center">
             <div className="relative mb-4">
                <img 
-                 src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" 
+                 src={profileImages[0] || profile?.photo_url || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80"} 
                  alt="Profile" 
                  className="w-32 h-32 rounded-full border-4 border-virgins-gold shadow-2xl object-cover"
                />
-               <button className="absolute bottom-0 right-0 bg-virgins-gold p-2 rounded-full text-virgins-dark hover:bg-virgins-gold/90 transition-colors shadow-lg">
-                 <Edit className="w-4 h-4" />
-               </button>
+               <label className="absolute bottom-0 right-0 bg-virgins-gold p-2 rounded-full text-virgins-dark hover:bg-virgins-gold/90 transition-colors shadow-lg cursor-pointer">
+                 {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                 <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+               </label>
             </div>
             
             <div className="flex items-center gap-2 mb-1">
@@ -156,6 +195,36 @@ const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
             </div>
           </div>
         </div>
+
+
+        {/* Photo Management */}
+        {profileImages.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+            <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <Upload size={14} className="text-virgins-purple" /> Profile Photos
+              </h3>
+              <label className="text-xs font-bold text-virgins-purple cursor-pointer hover:underline flex items-center gap-1">
+                <Upload size={12} /> Add Photo
+                <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+              </label>
+            </div>
+            <div className="p-4 grid grid-cols-3 gap-3">
+              {profileImages.map((url, idx) => (
+                <div key={idx} className="relative group aspect-square">
+                  <img src={url} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover rounded-xl border border-slate-100" />
+                  <button
+                    onClick={() => handleDeletePhoto(url)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                  >
+                    <X size={10} />
+                  </button>
+                  {idx === 0 && <span className="absolute bottom-1 left-1 text-[9px] font-black bg-virgins-gold text-virgins-dark px-1.5 py-0.5 rounded-full uppercase">Main</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Settings Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

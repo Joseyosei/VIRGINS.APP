@@ -3,6 +3,7 @@ import { BrainCircuit, Filter, RefreshCw, Heart, Check, ChevronDown, Sparkles, M
 import { MatchPreferences, MatchResult } from '../services/matching';
 import { calculateMatchScore } from '../services/matching';
 import { blink } from '../lib/blink';
+import { api } from '../lib/api';
 import { toast } from 'react-hot-toast';
 import { UserProfile } from '../types';
 
@@ -27,6 +28,8 @@ const MatchmakerDemo: React.FC<{ onNavigate?: (page: any) => void }> = ({ onNavi
   const [viewingProfile, setViewingProfile] = useState<MatchResult | null>(null);
   const [quickScoreProfile, setQuickScoreProfile] = useState<MatchResult | null>(null);
   const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
+  const [icebreakerModal, setIcebreakerModal] = useState<{ matchId: string; suggestions: string[] } | null>(null);
+  const [icebreakerLoading, setIcebreakerLoading] = useState(false);
   const [messages, setMessages] = useState<string[]>([]);
   const [inputMsg, setInputMsg] = useState("");
 
@@ -164,6 +167,42 @@ const MatchmakerDemo: React.FC<{ onNavigate?: (page: any) => void }> = ({ onNavi
     setTimeout(() => {
       setMessages(prev => [...prev, "Thank you for the thoughtful message. Intentionality is so rare these days. How was your day?"]);
     }, 1500);
+  };
+
+
+  const getIcebreaker = async (e: React.MouseEvent, profile: MatchResult) => {
+    e.stopPropagation();
+    setIcebreakerLoading(true);
+    setIcebreakerModal({ matchId: profile.profile?.id || profile.profile?.user_id || 'demo', suggestions: [] });
+    try {
+      // Use match ID if available, otherwise show demo starters
+      const matchId = profile.profile?.matchId;
+      if (matchId) {
+        const result = await (api as any).generateIcebreaker(matchId) as any;
+        setIcebreakerModal({ matchId, suggestions: result.icebreakers || [] });
+      } else {
+        // Demo fallback
+        setIcebreakerModal({
+          matchId: 'demo',
+          suggestions: [
+            `What's something from your faith journey that shaped who you are today?`,
+            `If you could go on one perfect first date, what would it look like?`,
+            `What values matter most to you in a future spouse?`
+          ]
+        });
+      }
+    } catch {
+      setIcebreakerModal({
+        matchId: 'demo',
+        suggestions: [
+          "What's something your faith community has taught you about love?",
+          "What does a covenant relationship mean to you personally?",
+          "What's one tradition or value you'd love to pass on to your children?"
+        ]
+      });
+    } finally {
+      setIcebreakerLoading(false);
+    }
   };
 
   const ScoreBar = ({ label, score, max, color }: { label: string, score: number, max: number, color: string }) => (
@@ -318,6 +357,13 @@ const MatchmakerDemo: React.FC<{ onNavigate?: (page: any) => void }> = ({ onNavi
                             >
                                <MessageCircle size={18} /> Chat
                             </button>
+                            <button
+                              onClick={(e) => getIcebreaker(e, result)}
+                              title="Get AI conversation starters"
+                              className="py-4 px-4 bg-virgins-gold/10 border border-virgins-gold/30 text-virgins-gold rounded-2xl font-bold flex items-center justify-center hover:bg-virgins-gold/20 transition-all active:scale-95"
+                            >
+                              <Sparkles size={18} />
+                            </button>
                          </div>
                       </div>
                     </div>
@@ -328,6 +374,47 @@ const MatchmakerDemo: React.FC<{ onNavigate?: (page: any) => void }> = ({ onNavi
           </div>
         </div>
       </div>
+
+
+      {/* Icebreaker Modal */}
+      {icebreakerModal && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center px-4 bg-virgins-dark/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 relative">
+            <button onClick={() => setIcebreakerModal(null)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-virgins-purple">
+              <X size={20} />
+            </button>
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-virgins-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-8 h-8 text-virgins-gold" />
+              </div>
+              <h3 className="text-xl font-serif font-bold text-virgins-purple">AI Icebreakers</h3>
+              <p className="text-sm text-slate-500 mt-1">Conversation starters crafted for your match</p>
+            </div>
+            {icebreakerLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="w-8 h-8 border-4 border-virgins-purple border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {icebreakerModal.suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      navigator.clipboard?.writeText(s).catch(() => {});
+                      toast.success('Copied to clipboard!');
+                    }}
+                    className="w-full text-left p-4 bg-virgins-cream border border-virgins-purple/10 rounded-2xl text-sm text-slate-700 hover:border-virgins-gold/50 hover:bg-virgins-gold/5 transition-all group"
+                  >
+                    <span className="text-virgins-gold font-bold text-xs block mb-1 uppercase tracking-wider">Starter {i + 1}</span>
+                    {s}
+                    <span className="text-[10px] text-slate-400 block mt-2 group-hover:text-virgins-gold transition-colors">Tap to copy</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Quick Score Modal */}
       {quickScoreProfile && (

@@ -16,6 +16,7 @@ import DatePlanner from './components/DatePlanner'
 import PricingPage from './components/PricingPage'
 import MessagingUI from './components/MessagingUI'
 import VerificationFlow from './components/VerificationFlow'
+import PasswordResetPage from './components/PasswordResetPage'
 import { connectSocket, disconnectSocket } from './lib/socket'
 import { PageView } from './types'
 
@@ -55,6 +56,24 @@ function App() {
       if (!isAuthenticated) disconnectSocket()
     }
   }, [isAuthenticated, isLoading])
+
+
+  // Stripe success / cancel detection
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const sessionId = params.get('session_id')
+    const canceled = params.get('canceled')
+    const page = params.get('page')
+    if (page) setCurrentPage(page as PageView)
+    if (sessionId) {
+      toast.success('Payment successful! Welcome to Premium. 💛', { duration: 6000 })
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+    if (canceled) {
+      toast('Checkout canceled. You can upgrade anytime.', { icon: 'ℹ️' })
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
 
   if (isLoading) {
     return (
@@ -110,6 +129,11 @@ function App() {
         return <DatePlanner onNavigate={(page) => setCurrentPage(page as PageView)} />
       case 'pricing':
         return <PricingPage onNavigate={(page) => setCurrentPage(page as PageView)} />
+      case 'password-reset': {
+        const params = new URLSearchParams(window.location.search)
+        const token = params.get('token') || ''
+        return <PasswordResetPage onNavigate={(page) => setCurrentPage(page as PageView)} token={token} />
+      }
       default:
         return <Hero onNavigate={(page) => setCurrentPage(page as PageView)} />
     }
@@ -117,7 +141,7 @@ function App() {
 
   const hiddenFooterPages: PageView[] = [
     'onboarding', 'profile', 'nearby', 'date-planner', 'login', 'signup',
-    'dashboard', 'matches', 'likes', 'matchmaker', 'messages', 'verification'
+    'dashboard', 'matches', 'likes', 'matchmaker', 'messages', 'verification', 'password-reset'
   ]
 
   return (

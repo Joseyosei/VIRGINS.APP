@@ -13,6 +13,8 @@ import matchRoutes from './routes/matchRoutes';
 import messageRoutes from './routes/messageRoutes';
 import verificationRoutes from './routes/verificationRoutes';
 import premiumRoutes from './routes/premiumRoutes';
+import subscriptionRoutes from './routes/subscriptionRoutes';
+import adminRoutes from './routes/adminRoutes';
 import Message from './models/Message';
 import Conversation from './models/Conversation';
 import User from './models/User';
@@ -39,6 +41,8 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }));
+// Stripe webhook needs raw body — must be before express.json
+app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }) as any);
 
 connectDB();
@@ -49,6 +53,8 @@ app.use('/api/matches', matchRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/verify', verificationRoutes);
 app.use('/api/premium', premiumRoutes);
+app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (_req, res) => {
   res.json({ message: 'Virgins API — Love Worth Waiting For.', socketio: 'enabled', version: '1.0.0' });

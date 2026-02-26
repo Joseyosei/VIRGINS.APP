@@ -26,7 +26,8 @@ export type PageView =
   | 'likes'
   | 'membership'
   | 'messages'
-  | 'verification';
+  | 'verification'
+  | 'password-reset';
 
 export interface Testimonial {
   id: number;

@@ -153,3 +153,126 @@ class ApiClient {
 
 export const api = new ApiClient();
 api.loadToken();
+
+// ============ Phase 4 additions ============
+
+// Password reset
+export class ApiClientPhase4 {}
+
+// Extend the existing api singleton by adding methods
+Object.assign(ApiClient.prototype, {
+
+  forgotPassword(email: string) {
+    return (this as any).request('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+  },
+
+  resetPassword(token: string, password: string) {
+    return (this as any).request(`/api/auth/reset-password/${token}`, {
+      method: 'POST',
+      body: JSON.stringify({ password })
+    });
+  },
+
+  // Photo / Video Upload (multipart — bypasses JSON request helper)
+  uploadProfilePhoto(file: File) {
+    const formData = new FormData();
+    formData.append('photo', file);
+    return fetch(`${BASE_URL}/api/users/me/photos`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${(this as any).accessToken}` },
+      body: formData
+    }).then(r => r.ok ? r.json() : r.json().then((e: any) => { throw new Error(e.message) }));
+  },
+
+  deleteProfilePhoto(photoUrl: string) {
+    return (this as any).request('/api/users/me/photos', {
+      method: 'DELETE',
+      body: JSON.stringify({ photoUrl })
+    });
+  },
+
+  uploadVideoIntro(file: File) {
+    const formData = new FormData();
+    formData.append('video', file);
+    return fetch(`${BASE_URL}/api/users/me/video`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${(this as any).accessToken}` },
+      body: formData
+    }).then(r => r.ok ? r.json() : r.json().then((e: any) => { throw new Error(e.message) }));
+  },
+
+  // Subscription / Stripe
+  getSubscriptionPlans() {
+    return (this as any).request('/api/subscription/plans');
+  },
+
+  createCheckoutSession(priceId: string) {
+    return (this as any).request('/api/subscription/create-checkout', {
+      method: 'POST',
+      body: JSON.stringify({ priceId })
+    });
+  },
+
+  getSubscriptionStatus() {
+    return (this as any).request('/api/subscription/status');
+  },
+
+  cancelSubscription() {
+    return (this as any).request('/api/subscription/cancel', { method: 'POST' });
+  },
+
+  // AI expansion
+  generateIcebreaker(matchId: string) {
+    return (this as any).request('/api/users/ai/icebreaker', {
+      method: 'POST',
+      body: JSON.stringify({ matchId })
+    });
+  },
+
+  getMatchInsights(matchId: string) {
+    return (this as any).request(`/api/users/ai/insights/${matchId}`);
+  },
+
+  getPhotoFeedback(photoBase64: string) {
+    return (this as any).request('/api/users/ai/photo-feedback', {
+      method: 'POST',
+      body: JSON.stringify({ photoBase64 })
+    });
+  },
+
+  // Admin
+  getAdminUsers(page = 1, search = '') {
+    return (this as any).request(`/api/admin/users?page=${page}&search=${encodeURIComponent(search)}`);
+  },
+
+  getAdminUser(userId: string) {
+    return (this as any).request(`/api/admin/users/${userId}`);
+  },
+
+  getAdminStats() {
+    return (this as any).request('/api/admin/stats');
+  },
+
+  getPendingVerifications() {
+    return (this as any).request('/api/admin/verifications/pending');
+  },
+
+  approveVerification(userId: string) {
+    return (this as any).request(`/api/admin/verifications/${userId}/approve`, { method: 'PUT' });
+  },
+
+  rejectVerification(userId: string) {
+    return (this as any).request(`/api/admin/verifications/${userId}/reject`, { method: 'PUT' });
+  },
+
+  banUser(userId: string) {
+    return (this as any).request(`/api/admin/users/${userId}/ban`, { method: 'PUT' });
+  },
+
+  unbanUser(userId: string) {
+    return (this as any).request(`/api/admin/users/${userId}/unban`, { method: 'PUT' });
+  },
+});

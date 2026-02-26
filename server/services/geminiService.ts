@@ -100,3 +100,143 @@ export const getDateIdeas = async (city: string, userInterests: string) => {
         throw new Error("Failed to get date ideas");
     }
 };
+/**
+ * Generate AI-powered icebreaker conversation starters
+ */
+export const generateIcebreaker = async (userA: any, userB: any): Promise<string[]> => {
+  try {
+    const prompt = `
+      Generate 3 unique conversation starter suggestions for two people on VIRGINS (a faith-based dating app for people saving sex for marriage).
+      
+      Person A: ${userA.name}, ${userA.age}, ${userA.faith} - Values: ${(userA.values || []).join(', ')} - Bio: ${userA.bio || 'N/A'}
+      Person B: ${userB.name}, ${userB.age}, ${userB.faith} - Values: ${(userB.values || []).join(', ')} - Bio: ${userB.bio || 'N/A'}
+      
+      Requirements: Wholesome, faith-respectful, marriage-minded. Avoid generic openers. Reference shared interests or complementary traits.
+      Return exactly 3 icebreakers, short and conversational.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            icebreakers: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            }
+          },
+          required: ['icebreakers']
+        }
+      }
+    });
+
+    const parsed = JSON.parse(response.text || '{"icebreakers":[]}');
+    return parsed.icebreakers.slice(0, 3);
+  } catch (error) {
+    console.error('Icebreaker Gen Error:', error);
+    return [
+      "What aspect of your faith journey are you most grateful for right now?",
+      "If you could go on one perfect date, what would it look like?",
+      "What values matter most to you in a future spouse?"
+    ];
+  }
+};
+
+/**
+ * Deep compatibility analysis between two users
+ */
+export const getMatchInsights = async (userA: any, userB: any): Promise<{
+  headline: string;
+  score: number;
+  strengths: string[];
+  watchouts: string[];
+}> => {
+  try {
+    const prompt = `
+      Analyze compatibility between two people on a faith-based dating app called VIRGINS.
+      
+      Person A: ${userA.name}, ${userA.age}, ${userA.faith} (${userA.faithLevel || 'Practicing'}), 
+        Intention: ${userA.intention || 'Dating to Marry'}, Lifestyle: ${userA.lifestyle || 'Traditional'},
+        Values: ${(userA.values || []).join(', ')}, Denomination: ${userA.denomination || 'Christian'}
+      
+      Person B: ${userB.name}, ${userB.age}, ${userB.faith} (${userB.faithLevel || 'Practicing'}),
+        Intention: ${userB.intention || 'Dating to Marry'}, Lifestyle: ${userB.lifestyle || 'Traditional'},
+        Values: ${(userB.values || []).join(', ')}, Denomination: ${userB.denomination || 'Christian'}
+      
+      Provide a covenant compatibility analysis. Be encouraging but honest. Score 0-100.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            headline: { type: Type.STRING },
+            score: { type: Type.NUMBER },
+            strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+            watchouts: { type: Type.ARRAY, items: { type: Type.STRING } }
+          },
+          required: ['headline', 'score', 'strengths', 'watchouts']
+        }
+      }
+    });
+
+    return JSON.parse(response.text || '{}');
+  } catch (error) {
+    console.error('Match Insights Error:', error);
+    throw new Error('Failed to generate match insights');
+  }
+};
+
+/**
+ * Analyze a profile photo and provide improvement feedback
+ */
+export const getPhotoFeedback = async (photoBase64: string): Promise<{
+  score: number;
+  positives: string[];
+  improvements: string[];
+}> => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              data: photoBase64.replace(/^data:image\/[a-z]+;base64,/, ''),
+              mimeType: 'image/jpeg'
+            }
+          },
+          {
+            text: `Analyze this dating profile photo for VIRGINS — a faith-based, wholesome dating app. 
+            Evaluate: lighting, background, expression, attire (modest standards), composition, and authenticity.
+            Score out of 10. Be constructive and respectful. Focus on presentation, not personal appearance judgment.`
+          }
+        ]
+      },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            score: { type: Type.NUMBER },
+            positives: { type: Type.ARRAY, items: { type: Type.STRING } },
+            improvements: { type: Type.ARRAY, items: { type: Type.STRING } }
+          },
+          required: ['score', 'positives', 'improvements']
+        }
+      }
+    });
+
+    return JSON.parse(response.text || '{"score":7,"positives":[],"improvements":[]}');
+  } catch (error) {
+    console.error('Photo Feedback Error:', error);
+    throw new Error('Failed to analyze photo');
+  }
+};

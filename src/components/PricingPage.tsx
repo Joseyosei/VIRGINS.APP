@@ -1,5 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+import { api } from '../lib/api';
 import { Crown, Check, Star, Shield, Zap, ArrowRight, Sparkles, MessageCircle, Eye, MapPin } from 'lucide-react';
 import { PageView } from '../types';
 
@@ -8,7 +10,42 @@ interface PricingPageProps {
 }
 
 const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
-  const plans = [
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [currentTier, setCurrentTier] = useState<string>('free');
+
+  useEffect(() => {
+    (api as any).getSubscriptionStatus().then((s: any) => {
+      if (s?.tier) setCurrentTier(s.tier);
+    }).catch(() => {});
+  }, []);
+
+  const tierPriceIds: Record<string, string> = {
+    plus: process.env.VITE_STRIPE_PRICE_PLUS_MONTHLY || (import.meta.env.VITE_STRIPE_PRICE_PLUS_MONTHLY || ''),
+    ultimate: process.env.VITE_STRIPE_PRICE_ULTIMATE_MONTHLY || (import.meta.env.VITE_STRIPE_PRICE_ULTIMATE_MONTHLY || ''),
+  };
+
+  const handleUpgrade = async (tier: string, planPriceId?: string) => {
+    if (tier === 'free' || tier === 'standard') { return; }
+    setLoadingPlan(tier);
+    try {
+      const priceId = planPriceId || tierPriceIds[tier];
+      if (!priceId) {
+        toast.error('Stripe price ID not configured. Set VITE_STRIPE_PRICE_* env vars.');
+        return;
+      }
+      const result = await (api as any).createCheckoutSession(priceId) as any;
+      if (result?.url) {
+        window.location.href = result.url;
+      } else {
+        toast.error(result?.message || 'Failed to start checkout');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Checkout unavailable');
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+  const plans: Array<{ name: string; price: string; period?: string; description: string; features: string[]; cta: string; popular: boolean; icon: React.ReactNode; tier: string; priceId?: string; }> = [
     {
       name: 'Standard',
       price: 'Free',
@@ -21,6 +58,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
       ],
       cta: 'Current Plan',
       popular: false,
+      tier: 'free',
       icon: <Star className="w-6 h-6 text-slate-400" />
     },
     {
@@ -37,6 +75,8 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
       ],
       cta: 'Upgrade to Plus',
       popular: true,
+      tier: 'plus',
+      priceId: import.meta.env.VITE_STRIPE_PRICE_PLUS_MONTHLY || '',
       icon: <Zap className="w-6 h-6 text-virgins-gold" fill="#C9A84C" />
     },
     {
@@ -54,6 +94,8 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
       ],
       cta: 'Go Ultimate',
       popular: false,
+      tier: 'ultimate',
+      priceId: import.meta.env.VITE_STRIPE_PRICE_ULTIMATE_MONTHLY || '',
       icon: <Crown className="w-6 h-6 text-virgins-gold" fill="#C9A84C" />
     }
   ];
@@ -107,10 +149,20 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
               </div>
 
               <button 
-                className={`w-full py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2 group ${plan.popular ? 'bg-virgins-gold text-virgins-dark hover:bg-virgins-gold/90' : 'bg-virgins-purple text-white hover:bg-virgins-purple/90'}`}
+                onClick={() => plan.tier !== 'free' && handleUpgrade(plan.tier, plan.priceId)}
+                disabled={loadingPlan === plan.tier || currentTier === plan.tier}
+                className={`w-full py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2 group disabled:opacity-60 disabled:cursor-not-allowed ${plan.popular ? 'bg-virgins-gold text-virgins-dark hover:bg-virgins-gold/90' : 'bg-virgins-purple text-white hover:bg-virgins-purple/90'}`}
               >
-                {plan.cta}
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                {loadingPlan === plan.tier ? (
+                  <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : currentTier === plan.tier ? (
+                  'Current Plan'
+                ) : (
+                  <>
+                    {plan.cta}
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
               </button>
             </div>
           ))}

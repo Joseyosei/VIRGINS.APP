@@ -12,6 +12,12 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'virgins_jwt_secret') as any;
     req.userId = decoded.id;
+    // Check ban status (import inline to avoid circular deps)
+    const User = (await import('../models/User')).default;
+    const user = await User.findById(decoded.id).select('isBanned');
+    if (user && (user as any).isBanned) {
+      return res.status(403).json({ message: 'Account suspended. Contact support.' });
+    }
     next();
   } catch {
     return res.status(401).json({ message: 'Token invalid or expired' });
