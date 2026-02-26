@@ -44,7 +44,45 @@ const userSchema = new mongoose.Schema({
     faceVerified: { type: Boolean, default: false },
     idVerified: { type: Boolean, default: false },
     voiceVerified: { type: Boolean, default: false }
-  }
+  },
+
+  // Auth
+  passwordHash: { type: String },
+  jwtRefreshToken: { type: String },
+
+  // Location
+  location: {
+    lat: { type: Number },
+    lng: { type: Number },
+    city: { type: String },
+    country: { type: String, default: 'US' }
+  },
+
+  // Trust System
+  trustLevel: { type: Number, default: 1, min: 1, max: 4 },
+  trustBadges: [{ type: String, enum: ['pledge', 'id_verified', 'reference_verified', 'background_checked'] }],
+
+  // Video Intro
+  videoIntroUrl: { type: String },
+
+  // Matching State
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  passedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  matches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
+  // Premium
+  subscriptionExpiry: { type: Date },
+  boostExpiresAt: { type: Date },
+  travelModeLocation: {
+    lat: { type: Number },
+    lng: { type: Number },
+    city: { type: String }
+  },
+
+  // Presence
+  lastSeen: { type: Date, default: Date.now },
+  isOnline: { type: Boolean, default: false },
+  pushToken: { type: String },
 }, {
   timestamps: true
 });

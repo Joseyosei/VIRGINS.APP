@@ -37,7 +37,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
       ],
       cta: 'Upgrade to Plus',
       popular: true,
-      icon: <Zap className="w-6 h-6 text-gold-500" fill="#D4A574" />
+      icon: <Zap className="w-6 h-6 text-virgins-gold" fill="#C9A84C" />
     },
     {
       name: 'Ultimate',
@@ -54,7 +54,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
       ],
       cta: 'Go Ultimate',
       popular: false,
-      icon: <Crown className="w-6 h-6 text-gold-600" fill="#D4A574" />
+      icon: <Crown className="w-6 h-6 text-virgins-gold" fill="#C9A84C" />
     }
   ];
 
@@ -62,10 +62,10 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
     <div className="min-h-screen bg-white pt-32 pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-gold-100 text-gold-700 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-virgins-gold/10 text-virgins-gold rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
             <Sparkles size={12} /> Premium Membership
           </div>
-          <h1 className="text-5xl md:text-6xl font-serif font-black text-navy-900 mb-6 tracking-tight">Invest in your <span className="italic text-gold-600">forever.</span></h1>
+          <h1 className="text-5xl md:text-6xl font-serif font-black text-virgins-purple mb-6 tracking-tight">Invest in your <span className="italic text-virgins-gold">forever.</span></h1>
           <p className="text-xl text-slate-500 font-light max-w-2xl mx-auto leading-relaxed">
             Choose the plan that aligns with your intentionality. All proceeds support the growth of our traditional community.
           </p>
@@ -75,10 +75,10 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
           {plans.map((plan, i) => (
             <div 
               key={i} 
-              className={`relative rounded-[3rem] p-8 sm:p-10 border transition-all hover:scale-[1.02] duration-500 ${plan.popular ? 'bg-navy-900 text-white border-navy-900 shadow-2xl scale-105 z-10' : 'bg-white text-navy-900 border-slate-100 shadow-xl'}`}
+              className={`relative rounded-[3rem] p-8 sm:p-10 border transition-all hover:scale-[1.02] duration-500 ${plan.popular ? 'bg-gradient-to-br from-virgins-dark to-virgins-purple text-white border-virgins-purple shadow-2xl scale-105 z-10' : 'bg-white text-virgins-purple border-slate-100 shadow-xl'}`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gold-500 text-navy-900 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-virgins-gold text-virgins-dark text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
                   Most Popular
                 </div>
               )}
@@ -100,14 +100,14 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
               <div className="space-y-4 mb-10">
                 {plan.features.map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-3">
-                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${plan.popular ? 'text-gold-500' : 'text-navy-900'}`} />
+                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${plan.popular ? 'text-virgins-gold' : 'text-virgins-purple'}`} />
                     <span className="text-sm font-medium leading-snug">{feature}</span>
                   </div>
                 ))}
               </div>
 
               <button 
-                className={`w-full py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2 group ${plan.popular ? 'bg-gold-500 text-navy-900 hover:bg-gold-400' : 'bg-navy-900 text-white hover:bg-navy-800'}`}
+                className={`w-full py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2 group ${plan.popular ? 'bg-virgins-gold text-virgins-dark hover:bg-virgins-gold/90' : 'bg-virgins-purple text-white hover:bg-virgins-purple/90'}`}
               >
                 {plan.cta}
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -117,21 +117,21 @@ const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Feature Comparison Grid */}
-        <div className="bg-slate-50 rounded-[3rem] p-12 border border-slate-100 overflow-hidden">
-           <h2 className="text-3xl font-serif font-black text-navy-900 mb-12 text-center">Compare Benefits</h2>
+        <div className="bg-virgins-cream rounded-[3rem] p-12 border border-slate-100 overflow-hidden">
+           <h2 className="text-3xl font-serif font-black text-virgins-purple mb-12 text-center">Compare Benefits</h2>
            
            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               {[
-                { title: 'Discovery Radar', desc: 'Find verified singles nearby with real GPS.', icon: <MapPin className="text-gold-500" /> },
-                { title: 'Covenant Insights', desc: 'Deep compatibility analysis and scoring.', icon: <Zap className="text-gold-500" /> },
-                { title: 'Safe Messaging', desc: 'Secure, respectful communication environment.', icon: <MessageCircle className="text-gold-500" /> },
-                { title: 'Verified Purity', desc: 'Strict community guidelines and moderation.', icon: <Shield className="text-gold-500" /> }
+                { title: 'Discovery Radar', desc: 'Find verified singles nearby with real GPS.', icon: <MapPin className="text-virgins-gold" /> },
+                { title: 'Covenant Insights', desc: 'Deep compatibility analysis and scoring.', icon: <Zap className="text-virgins-gold" /> },
+                { title: 'Safe Messaging', desc: 'Secure, respectful communication environment.', icon: <MessageCircle className="text-virgins-gold" /> },
+                { title: 'Verified Purity', desc: 'Strict community guidelines and moderation.', icon: <Shield className="text-virgins-gold" /> }
               ].map((f, i) => (
                 <div key={i} className="text-center md:text-left">
                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6 mx-auto md:mx-0 border border-gold-100">
                       {f.icon}
                    </div>
-                   <h4 className="font-bold text-navy-900 mb-2">{f.title}</h4>
+                   <h4 className="font-bold text-virgins-purple mb-2">{f.title}</h4>
                    <p className="text-sm text-slate-500 leading-relaxed">{f.desc}</p>
                 </div>
               ))}
