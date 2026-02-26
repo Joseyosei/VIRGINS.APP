@@ -10,12 +10,15 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.998.0",
+    "@aws-sdk/s3-request-presigner": "^3.998.0",
     "@blinkdotnew/react": "^1.0.2",
     "@blinkdotnew/sdk": "^2.3.5",
     "@google/genai": "^1.40.0",
     "@react-navigation/bottom-tabs": "^6.5.20",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
+    "@sendgrid/mail": "^8.1.6",
     "@tailwindcss/postcss": "^4.2.0",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
@@ -27,6 +30,7 @@
     "expo-linear-gradient": "~12.7.2",
     "expo-status-bar": "~1.11.1",
     "express": "^4.18.3",
+    "express-validator": "^7.3.1",
     "framer-motion": "^12.34.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.3",
@@ -41,6 +45,7 @@
     "react-native-screens": "~3.29.0",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
+    "stripe": "^20.4.0",
     "tailwind-merge": "^3.4.1",
     "tailwindcss-animate": "^1.0.7"
   },
