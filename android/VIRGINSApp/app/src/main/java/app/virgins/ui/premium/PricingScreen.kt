@@ -1,5 +1,6 @@
 package app.virgins.ui.premium
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -14,8 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -72,6 +73,8 @@ fun PricingScreen(
     var isYearly by remember { mutableStateOf(false) }
     val currentTier by viewModel.tier.collectAsState()
     val products by viewModel.products.collectAsState()
+    val context = LocalContext.current
+    val activity = context as? Activity
 
     Column(
         modifier = Modifier
@@ -151,13 +154,24 @@ fun PricingScreen(
                     2 -> currentTier == SubscriptionTier.ULTIMATE
                     else -> false
                 },
-                onSelect = { /* TODO: launch billing flow via activity */ }
+                onSelect = {
+                    val productDetails = when (i) {
+                        1 -> products.find { it.productId.contains("plus") }
+                        2 -> products.find { it.productId.contains("ultimate") }
+                        else -> null
+                    }
+                    if (productDetails != null && activity != null) {
+                        viewModel.billingService.launchBillingFlow(activity, productDetails)
+                    }
+                }
             )
         }
 
         Spacer(Modifier.height(8.dp))
         TextButton(
-            onClick = { /* restore purchases */ },
+            onClick = {
+                viewModel.billingService.queryExistingPurchases()
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Restore Purchases", color = VirginsCream.copy(alpha = 0.6f),

@@ -1,6 +1,8 @@
 package app.virgins.data.network
 
 import app.virgins.data.model.*
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.*
 
 interface ApiService {
@@ -59,6 +61,13 @@ interface ApiService {
 
     @POST("verify/reference")
     suspend fun requestReference(@Body body: Map<String, String>): EmptyResponse
+
+    @Multipart
+    @POST("verify/id-upload")
+    suspend fun uploadId(
+        @Part idFront: MultipartBody.Part,
+        @Part("idType") idType: RequestBody
+    ): EmptyResponse
 
     @POST("verify/background-check")
     suspend fun initiateBackgroundCheck(): EmptyResponse

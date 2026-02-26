@@ -1,5 +1,9 @@
 package app.virgins.ui.verification
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -15,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,6 +61,14 @@ class VerificationViewModel @Inject constructor(
         }
     }
 
+    fun uploadId(uri: Uri, context: Context) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            repo.uploadId(uri, context).onSuccess { loadStatus() }
+            _isLoading.value = false
+        }
+    }
+
     fun requestReference(email: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -92,8 +105,17 @@ private val steps = listOf(
 fun VerificationScreen(viewModel: VerificationViewModel = hiltViewModel()) {
     val status by viewModel.status.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val context = LocalContext.current
     var referenceEmail by remember { mutableStateOf("") }
     var showReferenceInput by remember { mutableStateOf(false) }
+    var selectedIdUri by remember { mutableStateOf<Uri?>(null) }
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedIdUri = uri
+        uri?.let { viewModel.uploadId(it, context) }
+    }
 
     Column(
         modifier = Modifier
@@ -119,43 +141,40 @@ fun VerificationScreen(viewModel: VerificationViewModel = hiltViewModel()) {
         // Trust level stepper
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            (1..4).forEach { level ->
+            (1..4).forEachIndexed { idx, level ->
                 val currentLevel = status?.level ?: 0
                 val isDone = currentLevel >= level
                 val isActive = currentLevel == level - 1
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                when {
-                                    isDone -> VirginGold
-                                    isActive -> VirginsPurple
-                                    else -> VirginsDarkSurface
-                                },
-                                CircleShape
-                            )
-                            .border(
-                                2.dp,
-                                if (isActive) VirginsPurpleLight else Color.Transparent,
-                                CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = level.toString(),
-                            color = if (isDone) VirginsDark else VirginsCream,
-                            fontWeight = FontWeight.Bold
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            when {
+                                isDone -> VirginGold
+                                isActive -> VirginsPurple
+                                else -> VirginsDarkSurface
+                            },
+                            CircleShape
                         )
-                    }
+                        .border(
+                            2.dp,
+                            if (isActive) VirginsPurpleLight else Color.Transparent,
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = level.toString(),
+                        color = if (isDone) VirginsDark else VirginsCream,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-                if (level < 4) {
-                    Divider(
-                        modifier = Modifier
-                            .weight(1f)
-                            .align(Alignment.CenterVertically),
+                if (idx < 3) {
+                    HorizontalDivider(
+                        modifier = Modifier.weight(1f),
                         color = if ((status?.level ?: 0) > level) VirginGold
                                else VirginsCream.copy(alpha = 0.2f)
                     )
@@ -234,6 +253,24 @@ fun VerificationScreen(viewModel: VerificationViewModel = hiltViewModel()) {
                                 onClick = { viewModel.signPledge() },
                                 colors = ButtonDefaults.buttonColors(containerColor = VirginsPurple)
                             ) { Text("Sign Pledge", color = VirginsCream) }
+                            1 -> Column {
+                                selectedIdUri?.let {
+                                    Text(
+                                        "Document selected — uploading…",
+                                        color = VirginGold,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                }
+                                Button(
+                                    onClick = { filePickerLauncher.launch("image/*") },
+                                    colors = ButtonDefaults.buttonColors(containerColor = VirginsPurple)
+                                ) {
+                                    Icon(Icons.Default.Upload, null, modifier = Modifier.size(18.dp), tint = VirginsCream)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Upload ID Document", color = VirginsCream)
+                                }
+                            }
                             2 -> {
                                 if (showReferenceInput) {
                                     Column {

@@ -62,7 +62,8 @@ class ProfileViewModel @Inject constructor(
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
     onLogout: () -> Unit,
-    onOpenPricing: () -> Unit
+    onOpenPricing: () -> Unit,
+    onOpenVerification: () -> Unit = {}
 ) {
     val user by viewModel.user.collectAsState()
     val analytics by viewModel.analytics.collectAsState()
@@ -178,11 +179,11 @@ fun ProfileScreen(
             Text("Settings", style = MaterialTheme.typography.titleMedium,
                 color = VirginGold, modifier = Modifier.padding(bottom = 8.dp))
             SettingsItem(Icons.Default.Edit, "Edit Profile") {}
-            SettingsItem(Icons.Default.Shield, "Trust Verification") {}
+            SettingsItem(Icons.Default.Shield, "Trust Verification") { onOpenVerification() }
             SettingsItem(Icons.Default.CreditCard, "Subscription") { onOpenPricing() }
             SettingsItem(Icons.Default.LocationOn, "Location") {}
             SettingsItem(Icons.Default.Notifications, "Notifications") {}
-            Divider(color = VirginsCream.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(color = VirginsCream.copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 8.dp))
             SettingsItem(Icons.Default.Logout, "Sign Out", tint = ErrorRed) {
                 viewModel.logout()
                 onLogout()

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.VIRGINSApp" parent="android:Theme.Material.NoTitleBar" />
+    <style name="Theme.VIRGINSApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
     <style name="Theme.VIRGINSApp.SplashScreen" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#1A0033</item>
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>

@@ -64,7 +64,7 @@ class BillingService @Inject constructor(@ApplicationContext private val context
         }
     }
 
-    private fun queryExistingPurchases() {
+    fun queryExistingPurchases() {
         billingClient.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder()
                 .setProductType(BillingClient.ProductType.SUBS)
