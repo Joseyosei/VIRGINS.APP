@@ -21,7 +21,8 @@ const COVENANT_QUESTIONS = [
 
 const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1); 
-  const [email, setEmail] = useState('');
+  const [email, setEmail]             = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState<number | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
@@ -190,22 +191,38 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
         }
       }
 
-      await (blink.db as any).users.create({
-        id: user.id,
-        user_id: user.id,
-        display_name: details.name,
-        email: email,
-        bio: `${details.faith} single from ${details.city} looking for ${details.lookingFor.join(', ')}. Interests include ${details.interests.join(', ')}.`,
-        gender: details.gender,
-        location: details.city,
-        coordinates: details.coordinates,
-        faith_level: details.faith_level,
-        values_level: details.values_level,
-        intention_level: details.intention_level,
-        lifestyle_level: details.lifestyle_level,
-        photo_url: uploadedUrls[0] || '',
-        is_premium: false,
-      });
+      // Persist profile to the real backend (falls back gracefully if not available)
+      try {
+        const { api } = await import('../lib/api');
+        await (api as any).updateMyProfile({
+          name:       details.name,
+          bio:        `${details.faith} single from ${details.city} looking for ${details.lookingFor.join(', ')}. Interests include ${details.interests.join(', ')}.`,
+          gender:     details.gender,
+          city:       details.city,
+          faith:      details.faith,
+          images:     uploadedUrls,
+          profileImage: uploadedUrls[0] || '',
+          onboardingStep: 5,
+          onboardingCompletedAt: new Date().toISOString(),
+          ...(referralCode ? { referralCodeUsed: referralCode } : {}),
+        });
+        await (api as any).trackOnboardingComplete();
+      } catch (backendErr) {
+        console.warn('[Onboarding] Backend sync failed:', backendErr);
+        // Fallback: still store locally via blink for now
+        await (blink.db as any).users.create({
+          id: user.id,
+          user_id: user.id,
+          display_name: details.name,
+          email: email,
+          bio: `${details.faith} single from ${details.city} looking for ${details.lookingFor.join(', ')}.`,
+          gender: details.gender,
+          location: details.city,
+          faith_level: details.faith_level,
+          photo_url: uploadedUrls[0] || '',
+          is_premium: false,
+        }).catch(() => {});
+      }
 
       toast.success('Covenant Profile Created!');
       setStep(6);
@@ -292,6 +309,18 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                       onChange={e => setEmail(e.target.value)}
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Referral Code (optional)</label>
+                  <input
+                    type="text"
+                    maxLength={8}
+                    className="block w-full px-5 py-3 bg-slate-50 border border-transparent rounded-2xl focus:ring-2 focus:ring-virgins-gold focus:bg-white transition-all outline-none text-slate-700 font-mono text-sm uppercase tracking-widest placeholder-slate-300"
+                    placeholder="e.g. AB12CD34"
+                    value={referralCode}
+                    onChange={e => setReferralCode(e.target.value.toUpperCase().slice(0, 8))}
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1 ml-1">Have a friend's referral code? Enter it to give them a free week of Plus.</p>
                 </div>
                 <button
                   type="submit"
@@ -573,11 +602,20 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onNavigate }) => {
                        <span>Launch Discover Feed</span>
                     </button>
                     
-                    <button 
+                    <button
+                       onClick={async () => {
+                         const msg = `Join me on VIRGINS — faith-based dating built on covenant values. Sign up at https://virgins.app`;
+                         if (navigator.share) {
+                           try { await navigator.share({ title: 'Join VIRGINS', text: msg }); } catch { /* cancelled */ }
+                         } else {
+                           await navigator.clipboard.writeText(msg);
+                           toast.success('Invite link copied!');
+                         }
+                       }}
                        className="w-full flex items-center justify-center space-x-2 py-3.5 px-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors text-slate-700 font-bold"
                     >
                        <Share2 className="w-4 h-4" />
-                       <span>Invite Traditional Friends</span>
+                       <span>Invite Friends to VIRGINS</span>
                     </button>
                  </div>
               </div>

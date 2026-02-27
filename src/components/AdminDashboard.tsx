@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Lock, Search, Users, ShieldCheck, Clock, Heart, TrendingUp, CheckCircle, XCircle, Ban, UserCheck, AlertTriangle, Loader2 } from 'lucide-react';
+import { Lock, Search, Users, ShieldCheck, Clock, Heart, TrendingUp, CheckCircle, XCircle, Ban, UserCheck, AlertTriangle, Loader2, Flag, MessageSquare } from 'lucide-react';
 import { api } from '../lib/api';
 import { toast } from 'react-hot-toast';
 
@@ -9,10 +9,13 @@ const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
+  const [reports, setReports]           = useState<any[]>([]);
+  const [reportTotal, setReportTotal]   = useState(0);
+  const [reportFilter, setReportFilter] = useState<'pending' | 'all' | 'reviewed'>('pending');
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [activeTab, setActiveTab] = useState<'users' | 'verifications'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'verifications' | 'reports'>('users');
   const [loading, setLoading] = useState(false);
 
   // Check if current user is admin
@@ -63,13 +66,38 @@ const AdminDashboard: React.FC = () => {
     }
   }, []);
 
+  const loadReports = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await (api as any).getAdminReports(1, reportFilter) as any;
+      setReports(data?.reports || []);
+      setReportTotal(data?.total || 0);
+    } catch (err: any) {
+      toast.error('Failed to load reports: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [reportFilter]);
+
+  const handleResolveReport = async (reportId: string, action: 'actioned' | 'dismissed') => {
+    try {
+      await (api as any).resolveReport(reportId, action);
+      toast.success(action === 'actioned' ? 'Report actioned — user banned.' : 'Report dismissed.');
+      loadReports();
+      loadStats();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       loadStats();
       loadUsers();
       loadPendingVerifications();
+      loadReports();
     }
-  }, [isAuthenticated, loadStats, loadUsers, loadPendingVerifications]);
+  }, [isAuthenticated, loadStats, loadUsers, loadPendingVerifications, loadReports]);
 
   const handleApprove = async (userId: string) => {
     try {
@@ -144,18 +172,19 @@ const AdminDashboard: React.FC = () => {
             <p className="text-slate-500">Real-time platform management — VIRGINS.APP</p>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => { loadStats(); loadUsers(); loadPendingVerifications(); }} className="flex items-center gap-2 px-4 py-2 bg-virgins-purple text-white rounded-lg font-medium text-sm hover:bg-virgins-purple/90 transition-colors">
+            <button onClick={() => { loadStats(); loadUsers(); loadPendingVerifications(); loadReports(); }} className="flex items-center gap-2 px-4 py-2 bg-virgins-purple text-white rounded-lg font-medium text-sm hover:bg-virgins-purple/90 transition-colors">
               Refresh
             </button>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
           {[
             { label: 'Total Users', value: stats?.totalUsers ?? '—', icon: <Users className="w-5 h-5 text-virgins-purple" />, color: 'text-virgins-purple' },
             { label: 'Premium Members', value: stats?.premiumUsers ?? '—', icon: <TrendingUp className="w-5 h-5 text-virgins-gold" />, color: 'text-virgins-gold' },
             { label: 'Pending Verifications', value: stats?.pendingVerifications ?? '—', icon: <AlertTriangle className="w-5 h-5 text-amber-500" />, color: 'text-amber-600' },
+            { label: 'Pending Reports', value: reportTotal, icon: <Flag className="w-5 h-5 text-red-500" />, color: 'text-red-600' },
             { label: 'Matches Today', value: stats?.matchesToday ?? '—', icon: <Heart className="w-5 h-5 text-pink-500" />, color: 'text-pink-600' },
             { label: 'Messages Today', value: stats?.messagesToday ?? '—', icon: <ShieldCheck className="w-5 h-5 text-green-500" />, color: 'text-green-600' },
           ].map((stat, i) => (
@@ -170,11 +199,15 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-6">
+        <div className="flex gap-3 mb-6 flex-wrap">
           <button onClick={() => setActiveTab('users')} className={`px-5 py-2 rounded-lg font-bold text-sm transition-colors ${activeTab === 'users' ? 'bg-virgins-purple text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>Users</button>
           <button onClick={() => setActiveTab('verifications')} className={`px-5 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${activeTab === 'verifications' ? 'bg-virgins-purple text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>
             Verifications
             {pendingVerifications.length > 0 && <span className="bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{pendingVerifications.length}</span>}
+          </button>
+          <button onClick={() => setActiveTab('reports')} className={`px-5 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${activeTab === 'reports' ? 'bg-virgins-purple text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>
+            <Flag size={14} /> Reports
+            {reportTotal > 0 && <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{reportTotal}</span>}
           </button>
         </div>
 
@@ -267,6 +300,89 @@ const AdminDashboard: React.FC = () => {
                 <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded text-sm border border-slate-300 disabled:opacity-50 hover:bg-slate-100">Next</button>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">User Reports</h3>
+                <p className="text-sm text-slate-500 mt-1">Review safety complaints and take action</p>
+              </div>
+              <div className="flex gap-2">
+                {(['pending', 'all', 'reviewed'] as const).map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setReportFilter(f)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-colors ${reportFilter === f ? 'bg-virgins-purple text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="py-12 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-virgins-purple" /></div>
+            ) : reports.length === 0 ? (
+              <div className="py-12 text-center">
+                <Flag className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500 font-medium">No {reportFilter === 'all' ? '' : reportFilter} reports.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {reports.map((r: any) => (
+                  <div key={r._id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-semibold text-slate-900">{r.reporterId?.name || 'Unknown'}</span>
+                          <span className="text-slate-400">→ reported →</span>
+                          <span className="font-semibold text-slate-900">{r.reportedId?.name || 'Unknown'}</span>
+                          {r.reportedId?.isBanned && <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold">BANNED</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          r.type === 'harassment' ? 'bg-red-100 text-red-700' :
+                          r.type === 'fake_profile' ? 'bg-orange-100 text-orange-700' :
+                          r.type === 'underage' ? 'bg-purple-100 text-purple-700' :
+                          'bg-slate-100 text-slate-600'
+                        }`}>
+                          {r.type?.replace(/_/g, ' ')}
+                        </span>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          r.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          r.status === 'actioned' ? 'bg-red-100 text-red-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {r.status}
+                        </span>
+                        <span className="text-xs text-slate-400">{new Date(r.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      {r.description && <p className="text-sm text-slate-600 truncate">{r.description}</p>}
+                    </div>
+                    {r.status === 'pending' && (
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleResolveReport(r._id, 'actioned')}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors"
+                        >
+                          <Ban size={12} /> Action + Ban
+                        </button>
+                        <button
+                          onClick={() => handleResolveReport(r._id, 'dismissed')}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+                        >
+                          <XCircle size={12} /> Dismiss
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

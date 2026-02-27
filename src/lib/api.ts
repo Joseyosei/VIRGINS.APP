@@ -394,4 +394,16 @@ Object.assign(ApiClient.prototype, {
   confirmWeMet(dateId: string) {
     return (this as any).request(`/api/dates/${dateId}/we-met`, { method: 'POST' });
   },
+
+  // Phase 7 — Admin Reports
+  getAdminReports(page = 1, status = 'pending') {
+    return (this as any).request(`/api/admin/reports?page=${page}&status=${status}`);
+  },
+
+  resolveReport(reportId: string, action: 'actioned' | 'dismissed', adminNote?: string) {
+    return (this as any).request(`/api/admin/reports/${reportId}/resolve`, {
+      method: 'PUT',
+      body: JSON.stringify({ action, adminNote }),
+    });
+  },
 });

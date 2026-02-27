@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Shield, ShieldCheck, Loader2 } from 'lucide-react'
+import { X, Send, Shield, ShieldCheck, Loader2, MoreVertical, Flag, Ban, HeartOff, AlertTriangle } from 'lucide-react'
 import { api } from '../lib/api'
 import { getSocket } from '../lib/socket'
+import { toast } from 'react-hot-toast'
 
 interface Partner {
   _id: string
@@ -26,6 +27,7 @@ interface MessagingUIProps {
   conversationId: string
   partner: Partner
   currentUserId: string
+  matchId?: string
   onClose: () => void
 }
 
@@ -41,7 +43,7 @@ function TrustBadge({ level }: { level?: number }) {
   )
 }
 
-export default function MessagingUI({ conversationId, partner, currentUserId, onClose }: MessagingUIProps) {
+export default function MessagingUI({ conversationId, partner, currentUserId, matchId, onClose }: MessagingUIProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputText, setInputText] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -49,6 +51,48 @@ export default function MessagingUI({ conversationId, partner, currentUserId, on
   const [isPartnerTyping, setIsPartnerTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Safety menu state
+  const [showMenu, setShowMenu]               = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportType, setReportType]           = useState('')
+  const [reportDesc, setReportDesc]           = useState('')
+
+  const handleBlock = async () => {
+    setShowMenu(false)
+    try {
+      await (api as any).blockUser(partner._id)
+      toast.success(`${partner.name} has been blocked.`)
+      onClose()
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to block user')
+    }
+  }
+
+  const handleUnmatch = async () => {
+    setShowMenu(false)
+    if (!matchId) { onClose(); return }
+    try {
+      await api.unmatch(matchId)
+      toast('Match removed.')
+      onClose()
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to unmatch')
+    }
+  }
+
+  const handleReport = async () => {
+    if (!reportType) return
+    try {
+      await (api as any).submitReport({ reportedId: partner._id, type: reportType, description: reportDesc, conversationId })
+      toast.success('Report submitted. Our team will review within 24 hours.')
+      setShowReportModal(false)
+      setReportType('')
+      setReportDesc('')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit report')
+    }
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -173,6 +217,38 @@ export default function MessagingUI({ conversationId, partner, currentUserId, on
           <p className="text-white font-semibold font-serif truncate">{partner.name}</p>
           <TrustBadge level={partner.trustLevel} />
         </div>
+        {/* 3-dot safety menu */}
+        <div className="relative flex-shrink-0">
+          <button
+            onClick={() => setShowMenu(m => !m)}
+            className="text-white/70 hover:text-white transition-colors p-1 mr-1"
+            aria-label="More options"
+          >
+            <MoreVertical className="w-5 h-5" />
+          </button>
+          {showMenu && (
+            <div className="absolute right-0 top-8 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-20 overflow-hidden">
+              <button
+                onClick={() => { setShowMenu(false); setShowReportModal(true) }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+              >
+                <Flag size={15} className="text-red-400" /> Report {partner.name}
+              </button>
+              <button
+                onClick={handleBlock}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <Ban size={15} className="text-gray-400" /> Block {partner.name}
+              </button>
+              <button
+                onClick={handleUnmatch}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-50"
+              >
+                <HeartOff size={15} className="text-gray-400" /> Unmatch
+              </button>
+            </div>
+          )}
+        </div>
         <button onClick={onClose} className="text-white/70 hover:text-white transition-colors flex-shrink-0">
           <X className="w-5 h-5" />
         </button>
@@ -234,6 +310,64 @@ export default function MessagingUI({ conversationId, partner, currentUserId, on
         )}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Click-away to close menu */}
+      {showMenu && <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />}
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="text-red-500" size={20} />
+              <h3 className="font-black text-gray-900">Report {partner.name}</h3>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-500 mb-1 block">Reason *</label>
+                <select
+                  value={reportType}
+                  onChange={e => setReportType(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-300 outline-none"
+                >
+                  <option value="">Select a reason...</option>
+                  <option value="harassment">Harassment</option>
+                  <option value="fake_profile">Fake Profile</option>
+                  <option value="inappropriate_content">Inappropriate Content</option>
+                  <option value="underage">Appears Underage</option>
+                  <option value="spam">Spam</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 mb-1 block">Additional details (optional)</label>
+                <textarea
+                  value={reportDesc}
+                  onChange={e => setReportDesc(e.target.value)}
+                  rows={3}
+                  placeholder="Describe what happened..."
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-red-300 outline-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => { setShowReportModal(false); setReportType(''); setReportDesc(''); }}
+                className="flex-1 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReport}
+                disabled={!reportType}
+                className="flex-1 py-2 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 disabled:opacity-50"
+              >
+                Submit Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Input */}
       <div className="px-4 py-3 flex items-end gap-3" style={{ borderTop: '1px solid hsl(270 100% 25% / 0.1)', background: 'white' }}>

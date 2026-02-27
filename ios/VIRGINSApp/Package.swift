@@ -24,7 +24,8 @@ let package = Package(
             dependencies: [
                 .product(name: "SocketIO", package: "socket.io-client-swift")
             ],
-            path: "Sources"
+            path: "Sources",
+            resources: [.process("PrivacyInfo.xcprivacy")]
         )
     ]
 )
