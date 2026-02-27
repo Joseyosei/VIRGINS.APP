@@ -94,6 +94,29 @@ const userSchema = new mongoose.Schema({
   // Phase 5 — onboarding analytics
   onboardingStep: { type: Number, default: 0 },
   onboardingCompletedAt: { type: Date },
+
+  // Phase 6 — block/report/GDPR
+  blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  isDeleted: { type: Boolean, default: false },
+
+  // Phase 6 — discovery preferences
+  preferences: {
+    gender: { type: String, enum: ['Man', 'Woman'] },
+    minAge: { type: Number, default: 18 },
+    maxAge: { type: Number, default: 50 },
+    maxDistanceKm: { type: Number, default: 100 },
+    targetDenominations: [{ type: String }],
+    requiredValues: [{ type: String }],
+    faithImportance: { type: Number, default: 35 },
+    valueImportance: { type: Number, default: 30 },
+    minTrustLevel: { type: Number, default: 1 },
+  },
+
+  // Phase 6 — reputation & referral
+  reputationScore: { type: Number, default: 0 },
+  referralCode: { type: String, unique: true, sparse: true },
+  referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  referralCount: { type: Number, default: 0 },
 }, {
   timestamps: true
 });

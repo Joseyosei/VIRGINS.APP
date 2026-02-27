@@ -1,5 +1,6 @@
 import express from 'express';
 import { getUsers, getUser, getStats, getPendingVerifications, approveVerification, rejectVerification, banUser, unbanUser } from '../controllers/adminController';
+import { listReports, resolveReport } from '../controllers/reportController';
 import { protect } from '../middleware/auth';
 import { requireAdmin } from '../middleware/admin';
 
@@ -16,5 +17,9 @@ router.put('/verifications/:userId/approve', approveVerification as any);
 router.put('/verifications/:userId/reject', rejectVerification as any);
 router.put('/users/:id/ban', banUser as any);
 router.put('/users/:id/unban', unbanUser as any);
+
+// Reports
+router.get('/reports', listReports as any);
+router.put('/reports/:id/resolve', resolveReport as any);
 
 export default router;

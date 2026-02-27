@@ -314,4 +314,84 @@ Object.assign(ApiClient.prototype, {
       method: 'POST'
     }).catch(() => {}); // Silent
   },
+
+  // Phase 6 — Discovery
+  getDiscovery(params?: { page?: number; gender?: string; minAge?: number; maxAge?: number }) {
+    const qs = new URLSearchParams();
+    if (params?.page)    qs.set('page',    String(params.page));
+    if (params?.gender)  qs.set('gender',  params.gender);
+    if (params?.minAge)  qs.set('minAge',  String(params.minAge));
+    if (params?.maxAge)  qs.set('maxAge',  String(params.maxAge));
+    return (this as any).request(`/api/discovery?${qs.toString()}`);
+  },
+
+  updatePreferences(prefs: object) {
+    return (this as any).request('/api/discovery/preferences', {
+      method: 'PUT',
+      body: JSON.stringify(prefs),
+    });
+  },
+
+  // Phase 6 — Profile (real backend)
+  getMyProfile() {
+    return (this as any).request('/api/users/me');
+  },
+
+  updateMyProfile(data: object) {
+    return (this as any).request('/api/users/me', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteMyAccount() {
+    return (this as any).request('/api/users/me', { method: 'DELETE' });
+  },
+
+  exportMyData() {
+    return (this as any).request('/api/users/me/data-export');
+  },
+
+  getReferral() {
+    return (this as any).request('/api/users/me/referral');
+  },
+
+  // Phase 6 — Block / Report
+  blockUser(userId: string) {
+    return (this as any).request(`/api/users/${userId}/block`, { method: 'POST' });
+  },
+
+  unblockUser(userId: string) {
+    return (this as any).request(`/api/users/${userId}/block`, { method: 'DELETE' });
+  },
+
+  submitReport(data: { reportedId: string; type: string; description?: string; conversationId?: string }) {
+    return (this as any).request('/api/reports', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Phase 6 — Dates / We Met
+  listDates() {
+    return (this as any).request('/api/dates');
+  },
+
+  requestDate(data: { matchId: string; stage?: string; category?: string; venue?: string; proposedDate?: string; proposedTime?: string }) {
+    return (this as any).request('/api/dates/request', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  respondToDate(dateId: string, response: 'accepted' | 'declined') {
+    return (this as any).request(`/api/dates/${dateId}/respond`, {
+      method: 'PUT',
+      body: JSON.stringify({ response }),
+    });
+  },
+
+  confirmWeMet(dateId: string) {
+    return (this as any).request(`/api/dates/${dateId}/we-met`, { method: 'POST' });
+  },
 });

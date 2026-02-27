@@ -8,19 +8,38 @@ import * as matchingService from '../services/matchingService';
 // Register User
 export const registerUser = async (req: any, res: any) => {
   try {
-    const { email } = req.body;
+    const { email, age, referralCode: incomingCode } = req.body;
+
+    // Age gate — enforced server-side (App Store / GDPR requirement)
+    if (age !== undefined && Number(age) < 18) {
+      return res.status(400).json({ message: 'You must be 18 or older to use VIRGINS.' });
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Generate verification token
+    // Generate verification token & unique referral code
     const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+    const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+
+    // Resolve referrer
+    let referredBy: string | undefined;
+    if (incomingCode) {
+      const referrer = await User.findOne({ referralCode: incomingCode });
+      if (referrer) {
+        referredBy = referrer._id.toString();
+        User.findByIdAndUpdate(referredBy, { $inc: { referralCount: 1 } }).catch(() => {});
+      }
+    }
 
     const user = await User.create({
       ...req.body,
       emailVerificationToken,
-      isEmailVerified: false
+      isEmailVerified: false,
+      referralCode,
+      ...(referredBy ? { referredBy } : {}),
     });
 
     // Send welcome email via emailService
@@ -35,7 +54,8 @@ export const registerUser = async (req: any, res: any) => {
 
     res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account.',
-      userId: user._id
+      userId: user._id,
+      referralCode,
     });
   } catch (error: any) {
     res.status(400).json({ message: error.message });

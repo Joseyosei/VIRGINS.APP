@@ -30,6 +30,10 @@ import adminRoutes from './routes/adminRoutes';
 import pushRoutes from './routes/pushRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
+import discoveryRoutes from './routes/discoveryRoutes';
+import dateRoutes from './routes/dateRoutes';
+import reportRoutes from './routes/reportRoutes';
+import { startRetentionJobs } from './jobs/retentionJobs';
 import Message from './models/Message';
 import { sendPushToUser } from './services/pushService';
 import Conversation from './models/Conversation';
@@ -75,6 +79,7 @@ app.use('/api/users/generate-bio', aiLimiter);
 app.use('/api/users/generate-video', videoLimiter);
 
 connectDB();
+startRetentionJobs();
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -87,6 +92,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/discovery', discoveryRoutes);
+app.use('/api/dates', dateRoutes);
+app.use('/api/reports', reportRoutes);
 
 app.get('/', (_req, res) => {
   res.json({ message: 'Virgins API — Love Worth Waiting For.', socketio: 'enabled', version: '1.0.0' });

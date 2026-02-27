@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Coffee, Utensils, TreePine, Church, Music, Footprints, Info, Clock, CheckCircle, ChevronRight, Search, Heart, Shield, Loader2, Home, MessageSquare } from 'lucide-react';
 import { getGroundedDateSpots } from '../services/ai';
+import { api } from '../lib/api';
+import { toast } from 'react-hot-toast';
 
 const CATEGORIES = [
   { id: 'coffee', label: 'Coffee Shop', icon: <Coffee size={20} /> },
@@ -12,7 +14,7 @@ const CATEGORIES = [
   { id: 'walk', label: 'Historic Walk', icon: <Footprints size={20} /> },
 ];
 
-const DatePlanner: React.FC<{ onNavigate?: (page: any) => void }> = ({ onNavigate }) => {
+const DatePlanner: React.FC<{ onNavigate?: (page: any) => void; matchId?: string }> = ({ onNavigate, matchId }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [fetchingVenues, setFetchingVenues] = useState(false);
@@ -75,12 +77,25 @@ const DatePlanner: React.FC<{ onNavigate?: (page: any) => void }> = ({ onNavigat
     }
   }, [step]);
 
-  const handleSendInvite = () => {
+  const handleSendInvite = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      if (matchId) {
+        await (api as any).requestDate({
+          matchId,
+          stage:        dateInfo.type as any,
+          category:     dateInfo.category,
+          venue:        dateInfo.venue,
+          proposedDate: dateInfo.date,
+          proposedTime: dateInfo.time,
+        });
+      }
       setPlanned(true);
-    }, 1500);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send date request. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (planned) {

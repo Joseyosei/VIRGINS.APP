@@ -8,6 +8,7 @@ import Features from './components/Features'
 import Testimonials from './components/Testimonials'
 import OnboardingFlow from './components/OnboardingFlow'
 import MatchmakerDemo from './components/MatchmakerDemo'
+import DiscoveryFeed from './components/DiscoveryFeed'
 import UserProfile from './components/UserProfile'
 import LoginPage from './components/LoginPage'
 import SignupPage from './components/SignupPage'
@@ -102,7 +103,7 @@ function App() {
       case 'dashboard':
       case 'matches':
       case 'matchmaker':
-        return <MatchmakerDemo onNavigate={(page) => setCurrentPage(page as PageView)} />
+        return <DiscoveryFeed onNavigate={(page) => setCurrentPage(page as PageView)} />
       case 'messages':
         return activeConversation ? (
           <MessagingUI
@@ -111,7 +112,7 @@ function App() {
             currentUserId={(user as any)?.id || (user as any)?._id || ''}
             onClose={() => { setCurrentPage('matches'); setActiveConversation(null); }}
           />
-        ) : <MatchmakerDemo onNavigate={(page) => setCurrentPage(page as PageView)} />
+        ) : <DiscoveryFeed onNavigate={(page) => setCurrentPage(page as PageView)} />
       case 'verification':
         return (
           <VerificationFlow
