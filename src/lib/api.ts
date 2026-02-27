@@ -406,4 +406,30 @@ Object.assign(ApiClient.prototype, {
       body: JSON.stringify({ action, adminNote }),
     });
   },
+
+  // Phase 9 — Community Events
+  listCommunityEvents(params?: { category?: string; city?: string; page?: number }) {
+    const qs = new URLSearchParams();
+    if (params?.category && params.category !== 'all') qs.set('category', params.category);
+    if (params?.city)  qs.set('city',  params.city);
+    if (params?.page)  qs.set('page',  String(params.page));
+    return (this as any).request(`/api/events?${qs.toString()}`);
+  },
+
+  getCommunityEvent(eventId: string) {
+    return (this as any).request(`/api/events/${eventId}`);
+  },
+
+  rsvpCommunityEvent(eventId: string) {
+    return (this as any).request(`/api/events/${eventId}/rsvp`, { method: 'POST' });
+  },
+
+  // Phase 9 — Daily Devotional
+  getTodayDevotional() {
+    return (this as any).request('/api/devotional/today');
+  },
+
+  getDevotionalMatch() {
+    return (this as any).request('/api/devotional/match');
+  },
 });

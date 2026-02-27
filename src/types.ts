@@ -27,7 +27,9 @@ export type PageView =
   | 'membership'
   | 'messages'
   | 'verification'
-  | 'password-reset';
+  | 'password-reset'
+  | 'community-events'
+  | 'devotional';
 
 export interface Testimonial {
   id: number;

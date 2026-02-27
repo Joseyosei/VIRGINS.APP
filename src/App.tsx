@@ -18,6 +18,8 @@ import PricingPage from './components/PricingPage'
 import MessagingUI from './components/MessagingUI'
 import VerificationFlow from './components/VerificationFlow'
 import PasswordResetPage from './components/PasswordResetPage'
+import CommunityEvents from './components/CommunityEvents'
+import DailyDevotional from './components/DailyDevotional'
 import { connectSocket, disconnectSocket } from './lib/socket'
 import { PageView } from './types'
 
@@ -135,6 +137,10 @@ function App() {
         const token = params.get('token') || ''
         return <PasswordResetPage onNavigate={(page) => setCurrentPage(page as PageView)} token={token} />
       }
+      case 'community-events':
+        return <CommunityEvents onNavigate={(page) => setCurrentPage(page as PageView)} />
+      case 'devotional':
+        return <DailyDevotional onNavigate={(page) => setCurrentPage(page as PageView)} />
       default:
         return <Hero onNavigate={(page) => setCurrentPage(page as PageView)} />
     }
@@ -142,7 +148,8 @@ function App() {
 
   const hiddenFooterPages: PageView[] = [
     'onboarding', 'profile', 'nearby', 'date-planner', 'login', 'signup',
-    'dashboard', 'matches', 'likes', 'matchmaker', 'messages', 'verification', 'password-reset'
+    'dashboard', 'matches', 'likes', 'matchmaker', 'messages', 'verification',
+    'password-reset', 'community-events', 'devotional'
   ]
 
   return (
