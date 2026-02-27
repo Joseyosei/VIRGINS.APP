@@ -1,6 +1,17 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazy-initialized — avoids crashing tests that import this module without API_KEY set.
+let _ai: GoogleGenAI | null = null;
+
+function getAI(): GoogleGenAI {
+  if (!_ai) {
+    if (!process.env.API_KEY) {
+      throw new Error('Gemini API key (API_KEY env var) is not configured');
+    }
+    _ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  }
+  return _ai;
+}
 
 /**
  * Generate a video intro from a profile photo using Veo
@@ -8,7 +19,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const generateVideoIntro = async (imageBase64: string, name: string) => {
   try {
     // 1. Start generation operation
-    let operation = await ai.models.generateVideos({
+    let operation = await getAI().models.generateVideos({
       model: 'veo-3.1-fast-generate-preview',
       prompt: `A cinematic, wholesome video portrait of ${name}, smiling warmly, looking at the camera, soft natural lighting, high quality.`,
       image: {
@@ -25,7 +36,7 @@ export const generateVideoIntro = async (imageBase64: string, name: string) => {
     // 2. Poll for completion
     while (!operation.done) {
       await new Promise(resolve => setTimeout(resolve, 5000)); // Poll every 5s
-      operation = await ai.operations.getVideosOperation({ operation: operation });
+      operation = await getAI().operations.getVideosOperation({ operation: operation });
     }
 
     // 3. Get download link

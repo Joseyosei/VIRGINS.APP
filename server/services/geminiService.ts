@@ -1,7 +1,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Initialize the Gemini AI client with API key from environment
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazy-initialized client — only created when a function is actually called,
+// so importing this module in tests without API_KEY does not throw.
+let _ai: GoogleGenAI | null = null;
+
+function getAI(): GoogleGenAI {
+  if (!_ai) {
+    if (!process.env.API_KEY) {
+      throw new Error('Gemini API key (API_KEY env var) is not configured');
+    }
+    _ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  }
+  return _ai;
+}
 
 /**
  * Generate a marriage-minded profile bio
@@ -20,7 +31,7 @@ export const generateProfileBio = async (data: any) => {
       Requirements: Respectful, wholesome, marriage-minded tone.
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
@@ -49,7 +60,7 @@ export const generateProfileBio = async (data: any) => {
  */
 export const editUserImage = async (imageBase64: string, prompt: string) => {
   try {
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
         parts: [
@@ -82,7 +93,7 @@ export const editUserImage = async (imageBase64: string, prompt: string) => {
  */
 export const getDateIdeas = async (city: string, userInterests: string) => {
     try {
-        const response = await ai.models.generateContent({
+        const response = await getAI().models.generateContent({
             model: "gemini-2.5-flash",
             contents: `Suggest 3 wholesome, public date spots in ${city} suitable for a first date involving: ${userInterests}.`,
             config: {
@@ -115,7 +126,7 @@ export const generateIcebreaker = async (userA: any, userB: any): Promise<string
       Return exactly 3 icebreakers, short and conversational.
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
@@ -169,7 +180,7 @@ export const getMatchInsights = async (userA: any, userB: any): Promise<{
       Provide a covenant compatibility analysis. Be encouraging but honest. Score 0-100.
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
@@ -203,7 +214,7 @@ export const getPhotoFeedback = async (photoBase64: string): Promise<{
   improvements: string[];
 }> => {
   try {
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
       contents: {
         parts: [
