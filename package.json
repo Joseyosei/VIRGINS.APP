@@ -8,9 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "test": "jest --config server/jest.config.ts",
-    "test:watch": "jest --config server/jest.config.ts --watch",
-    "test:coverage": "jest --config server/jest.config.ts --coverage"
+    "test": "jest --config server/jest.config.cjs",
+    "test:watch": "jest --config server/jest.config.cjs --watch",
+    "test:coverage": "jest --config server/jest.config.cjs --coverage"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.998.0",
@@ -49,6 +49,7 @@
     "mongoose": "^8.2.1",
     "multer": "^2.0.2",
     "react": "18.2.0",
+    "react-dom": "^18.3.1",
     "react-hot-toast": "^2.6.0",
     "react-native": "0.73.6",
     "react-native-safe-area-context": "4.8.2",
@@ -71,9 +72,12 @@
     "@types/node": "^20.11.25",
     "@types/react": "~18.2.45",
     "@types/supertest": "^7.2.0",
+    "@vitejs/plugin-react": "^5.1.4",
+    "autoprefixer": "^10.4.27",
     "concurrently": "^8.2.2",
     "jest": "^30.2.0",
     "nodemon": "^3.1.0",
+    "postcss": "^8.5.6",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",

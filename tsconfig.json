@@ -30,6 +30,12 @@
   },
   "exclude": [
     "node_modules",
-    "server/__tests__"
+    "server/__tests__",
+    "index.tsx",
+    "App.tsx",
+    "types.ts",
+    "virgins-mobile-app-complete.tsx",
+    "components",
+    "dist"
   ]
 }
