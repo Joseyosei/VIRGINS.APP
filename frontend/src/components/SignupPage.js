@@ -23,6 +23,7 @@ export default function SignupPage({ onNavigate }) {
     setError('');
     try {
       await signup(formData.name, formData.email, formData.password);
+      sessionStorage.setItem('virgins_just_signed_up', 'true');
       onNavigate('waitlist');
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');

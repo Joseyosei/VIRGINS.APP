@@ -20,12 +20,14 @@ import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import SplashIntro from './components/SplashIntro';
 import LikesScreen from './components/LikesScreen';
+import WelcomeTutorial from './components/WelcomeTutorial';
 import { HowItWorks, Pricing } from './components/ProductPages';
 import { About, Careers, Press, Contact, Privacy, Terms, Cookies, Safety } from './components/StaticPages';
 
 function AppInner() {
   const [currentPage, setCurrentPage] = useState('home');
   const [showSplash, setShowSplash] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -33,10 +35,27 @@ function AppInner() {
     if (hasSeenSplash) setShowSplash(false);
   }, []);
 
+  // Show tutorial after first login (only once, and only after onboarding)
+  useEffect(() => {
+    if (user && !loading) {
+      const hasSeenTutorial = localStorage.getItem('virgins_tutorial_seen');
+      const justSignedUp = sessionStorage.getItem('virgins_just_signed_up');
+      if (!hasSeenTutorial && !justSignedUp) {
+        setShowTutorial(true);
+      }
+    }
+  }, [user, loading]);
+
   const handleSplashComplete = () => {
     sessionStorage.setItem('virgins_splash_seen', 'true');
     setShowSplash(false);
     setCurrentPage(user ? 'matchmaker' : 'home');
+  };
+
+  const handleTutorialComplete = () => {
+    localStorage.setItem('virgins_tutorial_seen', 'true');
+    setShowTutorial(false);
+    setCurrentPage('matchmaker');
   };
 
   const renderPage = () => {
@@ -114,6 +133,7 @@ function AppInner() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
+      {showTutorial && <WelcomeTutorial onComplete={handleTutorialComplete} />}
       <Header onNavigate={setCurrentPage} currentPage={currentPage} />
       {renderPage()}
       {!hiddenFooterPages.includes(currentPage) && <Footer onNavigate={setCurrentPage} />}

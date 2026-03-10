@@ -65,6 +65,8 @@ export default function OnboardingFlow({ onNavigate }) {
         }),
       });
       await refreshProfile();
+      // Clear signup flag so tutorial can show on matchmaker
+      sessionStorage.removeItem('virgins_just_signed_up');
       onNavigate('matchmaker');
     } catch (e) {
       console.error('Onboarding save failed:', e);
