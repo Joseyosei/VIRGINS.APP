@@ -62,7 +62,12 @@ Build a faith-based dating app (VIRGINS) for marriage-minded Christians from an 
 - [x] Circular next button (Bumble-style) in onboarding
 - [x] Progress bar in onboarding
 
-### Testing Results
+### Phase 3 - Bug Fixes & UX Improvements (Mar 10, 2026) ✅
+- [x] Fixed Next button in onboarding: full-width "Continue →" button at bottom (was small circle cut off on mobile)
+- [x] Fixed NearbyMap: reverse-geocodes actual city name, always-visible user labels, radar sweep animation, user profile modals with Like/Chat
+- [x] Added 5-step Welcome Tutorial after first login (Discover → Likes → Nearby → Date Planner → Safety)
+- [x] Tutorial only shows after login (not signup), controlled by flags
+- [x] Correct flow: Signup → Onboarding → Tutorial → Discover
 - Backend: 100% tests passing
 - Frontend: All core flows verified (signup → onboarding → login → discover → likes → profile edit)
 
