@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Virgins",
+    "slug": "virgins-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "virginsapp",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A1A2E"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.virgins.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We use your location to show nearby verified singles in your area.",
+        "NSPhotoLibraryUsageDescription": "We need access to your photos to set up your profile.",
+        "NSCameraUsageDescription": "We need camera access so you can take profile photos."
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1A1A2E"
+      },
+      "package": "com.virgins.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      "expo-font",
+      "expo-location",
+      "expo-image-picker"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "virgins-dating-app"
+      }
+    }
+  }
+}
