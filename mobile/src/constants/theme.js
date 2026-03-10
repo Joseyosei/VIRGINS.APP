@@ -25,7 +25,7 @@ export const COLORS = {
 };
 
 // Replace with your deployed backend URL
-export const API_URL = 'https://27f60236-87dd-4eea-9a6a-6815079e7e3d.preview.emergentagent.com';
+export const API_URL = 'https://pure-hearts-app.preview.emergentagent.com';
 
 export const DENOMINATIONS = [
   'Non-Denominational', 'Baptist', 'Catholic', 'Methodist',
